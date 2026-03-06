@@ -13,7 +13,6 @@ export default async function AdminUsersPage() {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const profiles = (data ?? []) as ProfileRow[];

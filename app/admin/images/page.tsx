@@ -13,7 +13,6 @@ export default async function AdminImagesPage() {
   const { data, error } = await supabase
     .from("images")
     .select("*")
-    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const images = (data ?? []) as ImageRow[];

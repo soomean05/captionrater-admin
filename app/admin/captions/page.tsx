@@ -15,7 +15,6 @@ export default async function AdminCaptionsPage() {
   const { data, error } = await supabase
     .from("captions")
     .select("*")
-    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const captions = (data ?? []) as CaptionRow[];
