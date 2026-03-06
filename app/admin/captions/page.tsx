@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 type CaptionRow = Record<string, unknown> & {
   id?: string | number;
-  created_at?: string | null;
+  created_datetime_utc?: string | null;
   image_id?: string | number | null;
   profile_id?: string | null;
   text?: string | null;
@@ -15,7 +15,7 @@ export default async function AdminCaptionsPage() {
   const { data, error } = await supabase
     .from("captions")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const captions = (data ?? []) as CaptionRow[];
@@ -65,8 +65,8 @@ export default async function AdminCaptionsPage() {
                     {c.profile_id ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-zinc-700">
-                    {c.created_at
-                      ? new Date(c.created_at).toLocaleString()
+                    {c.created_datetime_utc
+                      ? new Date(c.created_datetime_utc).toLocaleString()
                       : "—"}
                   </td>
                 </tr>

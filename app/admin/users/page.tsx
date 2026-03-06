@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 type ProfileRow = Record<string, unknown> & {
   id?: string;
   email?: string | null;
-  created_at?: string | null;
+  created_datetime_utc?: string | null;
   is_superadmin?: boolean | null;
 };
 
@@ -13,7 +13,7 @@ export default async function AdminUsersPage() {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const profiles = (data ?? []) as ProfileRow[];
@@ -53,7 +53,7 @@ export default async function AdminUsersPage() {
                   {p.id ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-zinc-700">
-                  {p.created_at ? new Date(p.created_at).toLocaleString() : "—"}
+                  {p.created_datetime_utc ? new Date(p.created_datetime_utc).toLocaleString() : "—"}
                 </td>
                 <td className="px-4 py-3">
                   {p.is_superadmin ? (

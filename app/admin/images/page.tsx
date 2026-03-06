@@ -4,7 +4,7 @@ import { createImage, deleteImage, updateImage } from "./actions";
 type ImageRow = Record<string, unknown> & {
   id?: string | number;
   url?: string | null;
-  created_at?: string | null;
+  created_datetime_utc?: string | null;
 };
 
 export default async function AdminImagesPage() {
@@ -13,7 +13,7 @@ export default async function AdminImagesPage() {
   const { data, error } = await supabase
     .from("images")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("created_datetime_utc", { ascending: false })
     .limit(200);
 
   const images = (data ?? []) as ImageRow[];
@@ -103,8 +103,8 @@ export default async function AdminImagesPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-zinc-700">
-                    {img.created_at
-                      ? new Date(img.created_at).toLocaleString()
+                    {img.created_datetime_utc
+                      ? new Date(img.created_datetime_utc).toLocaleString()
                       : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
