@@ -1,23 +1,21 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type CaptionRow = Record<string, unknown> & {
-  id?: string | number;
-  created_datetime_utc?: string | null;
-  image_id?: string | number | null;
-  profile_id?: string | null;
-  text?: string | null;
-  caption?: string | null;
-};
-
 export default async function AdminCaptionsPage() {
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
+  const supabaseAdmin = createAdminClient();
+  const { data, error } = await supabaseAdmin
     .from("captions")
     .select("*")
-    .limit(200);
+    .order("created_datetime_utc", { ascending: false });
 
-  const captions = (data ?? []) as CaptionRow[];
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+        {error.message}
+      </div>
+    );
+  }
+
+  const rows = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -28,51 +26,43 @@ export default async function AdminCaptionsPage() {
         </p>
       </div>
 
-      {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-          Failed to load captions: {error.message}
-        </div>
-      ) : null}
-
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
             <tr>
               <th className="px-4 py-3">Caption</th>
-              <th className="px-4 py-3">Image</th>
-              <th className="px-4 py-3">Profile</th>
+              <th className="px-4 py-3">Image ID</th>
+              <th className="px-4 py-3">Profile ID</th>
               <th className="px-4 py-3">Created</th>
             </tr>
           </thead>
           <tbody>
-            {captions.map((c) => {
+            {rows.map((row) => {
               const captionText =
-                (c.text ?? c.caption ?? "").toString().trim() || "—";
-
+                (row.text ?? row.caption ?? "").toString().trim() || "—";
               return (
                 <tr
-                  key={String(c.id)}
+                  key={String(row.id)}
                   className="border-b border-zinc-100 last:border-0"
                 >
-                  <td className="px-4 py-3 text-zinc-900">
-                    <div className="max-w-xl truncate">{captionText}</div>
+                  <td className="max-w-xl truncate px-4 py-3 text-zinc-900">
+                    {captionText}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-zinc-700">
-                    {c.image_id ?? "—"}
+                    {row.image_id ?? "—"}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-zinc-700">
-                    {c.profile_id ?? "—"}
+                    {row.profile_id ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-zinc-700">
-                    {c.created_datetime_utc
-                      ? new Date(c.created_datetime_utc).toLocaleString()
+                    {row.created_datetime_utc
+                      ? new Date(row.created_datetime_utc).toLocaleString()
                       : "—"}
                   </td>
                 </tr>
               );
             })}
-
-            {!error && captions.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
                 <td className="px-4 py-6 text-sm text-zinc-600" colSpan={4}>
                   No captions found.
@@ -85,4 +75,3 @@ export default async function AdminCaptionsPage() {
     </div>
   );
 }
-

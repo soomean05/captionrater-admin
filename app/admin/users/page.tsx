@@ -1,21 +1,21 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type ProfileRow = Record<string, unknown> & {
-  id?: string;
-  email?: string | null;
-  created_datetime_utc?: string | null;
-  is_superadmin?: boolean | null;
-};
-
 export default async function AdminUsersPage() {
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
+  const supabaseAdmin = createAdminClient();
+  const { data, error } = await supabaseAdmin
     .from("profiles")
     .select("*")
-    .limit(200);
+    .order("created_datetime_utc", { ascending: false });
 
-  const profiles = (data ?? []) as ProfileRow[];
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+        {error.message}
+      </div>
+    );
+  }
+
+  const rows = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -26,36 +26,32 @@ export default async function AdminUsersPage() {
         </p>
       </div>
 
-      {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-          Failed to load profiles: {error.message}
-        </div>
-      ) : null}
-
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
             <tr>
               <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">First Name</th>
+              <th className="px-4 py-3">Last Name</th>
+              <th className="px-4 py-3">Is Superadmin</th>
               <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Superadmin</th>
             </tr>
           </thead>
           <tbody>
-            {profiles.map((p) => (
-              <tr key={String(p.id)} className="border-b border-zinc-100 last:border-0">
-                <td className="px-4 py-3 text-zinc-900">
-                  {p.email ?? "—"}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-700">
-                  {p.id ?? "—"}
+            {rows.map((row) => (
+              <tr
+                key={String(row.id)}
+                className="border-b border-zinc-100 last:border-0"
+              >
+                <td className="px-4 py-3 text-zinc-900">{row.email ?? "—"}</td>
+                <td className="px-4 py-3 text-zinc-700">
+                  {row.first_name ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-zinc-700">
-                  {p.created_datetime_utc ? new Date(p.created_datetime_utc).toLocaleString() : "—"}
+                  {row.last_name ?? "—"}
                 </td>
                 <td className="px-4 py-3">
-                  {p.is_superadmin ? (
+                  {row.is_superadmin ? (
                     <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">
                       TRUE
                     </span>
@@ -65,12 +61,19 @@ export default async function AdminUsersPage() {
                     </span>
                   )}
                 </td>
+                <td className="px-4 py-3 text-zinc-700">
+                  {row.created_datetime_utc
+                    ? new Date(row.created_datetime_utc).toLocaleString()
+                    : "—"}
+                </td>
               </tr>
             ))}
-
-            {!error && profiles.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-sm text-zinc-600" colSpan={4}>
+                <td
+                  className="px-4 py-6 text-sm text-zinc-600"
+                  colSpan={5}
+                >
                   No profiles found.
                 </td>
               </tr>
@@ -81,4 +84,3 @@ export default async function AdminUsersPage() {
     </div>
   );
 }
-
