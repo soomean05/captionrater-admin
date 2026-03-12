@@ -17,7 +17,6 @@ export default async function AdminSchemaCheckPage() {
     "whitelist_email_addresses",
     "whitelisted_email_addresses",
     "whitelisted_emails",
-    "llm_responses",
     "llm_model_responses",
     "humor_mix",
     "humor_flavor_steps",

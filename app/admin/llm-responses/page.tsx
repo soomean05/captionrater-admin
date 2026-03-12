@@ -1,58 +1,79 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
-import { listTableWithFallback } from "@/lib/admin/queries";
+import { listTable } from "@/lib/admin/queries";
 import { formatSupabaseError } from "@/lib/admin/formatError";
+import { LlmResponseViewButton } from "./LlmResponseViewButton";
 
-function truncate(s: string, len = 80) {
+function truncate(s: string, len = 60) {
   if (!s || s.length <= len) return s;
   return s.slice(0, len) + "…";
 }
 
 export default async function AdminLlmResponsesPage() {
-  const { data, error } = await listTableWithFallback([
-    "llm_responses",
+  const { data, error } = await listTable(
     "llm_model_responses",
-  ]);
+    "created_datetime_utc"
+  );
   const rows = (data ?? []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="LLM Responses"
-        subtitle="Read-only. Response bodies truncated in table."
+        subtitle="Read-only. From llm_model_responses. Use View to see full response and prompts."
       />
 
       <AdminTable
         error={error ? formatSupabaseError(error) : null}
         empty={rows.length === 0}
         emptyMessage="No LLM responses found."
-        colSpan={6}
+        colSpan={9}
         headers={
           <tr>
             <th className="px-4 py-3">ID</th>
-            <th className="px-4 py-3">Model</th>
-            <th className="px-4 py-3">Provider</th>
-            <th className="px-4 py-3">Request Summary</th>
-            <th className="px-4 py-3">Response Summary</th>
             <th className="px-4 py-3">Created</th>
+            <th className="px-4 py-3">Model ID</th>
+            <th className="px-4 py-3">Caption Req</th>
+            <th className="px-4 py-3">Profile</th>
+            <th className="px-4 py-3">Time (s)</th>
+            <th className="px-4 py-3">Temp</th>
+            <th className="px-4 py-3">Response</th>
+            <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         }
       >
         {rows.map((row) => (
           <tr key={String(row.id)} className="border-b border-zinc-100 last:border-0">
-            <td className="px-4 py-3 font-mono text-xs text-zinc-700">{String(row.id ?? "—")}</td>
-            <td className="px-4 py-3 text-zinc-700">{String(row.model_id ?? row.model_name ?? row.llm_model_id ?? "—")}</td>
-            <td className="px-4 py-3 text-zinc-700">{String(row.provider_id ?? row.provider_name ?? row.llm_provider_id ?? "—")}</td>
-            <td className="max-w-xs truncate px-4 py-3 text-zinc-700" title={String(row.request ?? row.prompt ?? row.input_text ?? "")}>
-              {truncate(String(row.request ?? row.prompt ?? row.input_text ?? "—"), 60)}
-            </td>
-            <td className="max-w-xs truncate px-4 py-3 text-zinc-700" title={String(row.response ?? row.body ?? row.output_text ?? row.response_text ?? "")}>
-              {truncate(String(row.response ?? row.body ?? row.output_text ?? row.response_text ?? "—"), 60)}
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.id ?? "—")}
             </td>
             <td className="px-4 py-3 text-zinc-700">
               {row.created_datetime_utc
                 ? new Date(row.created_datetime_utc as string).toLocaleString()
                 : "—"}
+            </td>
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.llm_model_id ?? "—")}
+            </td>
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.caption_request_id ?? "—")}
+            </td>
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.profile_id ?? "—")}
+            </td>
+            <td className="px-4 py-3 text-zinc-700">
+              {row.processing_time_seconds != null
+                ? String(row.processing_time_seconds)
+                : "—"}
+            </td>
+            <td className="px-4 py-3 text-zinc-700">
+              {row.llm_temperature != null ? String(row.llm_temperature) : "—"}
+            </td>
+            <td className="max-w-xs truncate px-4 py-3 text-zinc-700">
+              {truncate(String(row.llm_model_response ?? ""), 60) || "—"}
+            </td>
+            <td className="px-4 py-3 text-right">
+              <LlmResponseViewButton row={row} />
             </td>
           </tr>
         ))}
