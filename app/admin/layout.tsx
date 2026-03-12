@@ -30,33 +30,18 @@ export default async function AdminLayout({
 
         <main className="min-w-0 flex-1 p-6">
           <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-wrap items-center gap-2 md:hidden">
-              <Link
-                href="/admin"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
-              >
+            <div className="flex flex-wrap items-center gap-1 overflow-x-auto md:hidden">
+              <Link href="/admin" className="whitespace-nowrap rounded px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100">
                 Dashboard
               </Link>
-              <span className="text-zinc-400">·</span>
-              <Link
-                href="/admin/users"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
-              >
+              <Link href="/admin/users" className="whitespace-nowrap rounded px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100">
                 Users
               </Link>
-              <span className="text-zinc-400">·</span>
-              <Link
-                href="/admin/images"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
-              >
+              <Link href="/admin/images" className="whitespace-nowrap rounded px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100">
                 Images
               </Link>
-              <span className="text-zinc-400">·</span>
-              <Link
-                href="/admin/captions"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
-              >
-                Captions
+              <Link href="/admin/terms" className="whitespace-nowrap rounded px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100">
+                Terms
               </Link>
             </div>
             <div className="flex items-center gap-3">

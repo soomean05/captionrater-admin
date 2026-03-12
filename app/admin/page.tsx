@@ -77,25 +77,32 @@ export default async function AdminDashboardPage() {
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-zinc-900">Quick links</h2>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <Link
-            href="/admin/users"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-          >
-            Users
-          </Link>
-          <Link
-            href="/admin/images"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-          >
-            Images
-          </Link>
-          <Link
-            href="/admin/captions"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-          >
-            Captions
-          </Link>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            "users",
+            "images",
+            "humor-flavors",
+            "humor-flavor-steps",
+            "humor-mix",
+            "terms",
+            "captions",
+            "caption-requests",
+            "caption-examples",
+            "llm-models",
+            "llm-providers",
+            "llm-prompt-chains",
+            "llm-responses",
+            "allowed-signup-domains",
+            "whitelisted-emails",
+          ].map((slug) => (
+            <Link
+              key={slug}
+              href={`/admin/${slug}`}
+              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            >
+              {slug.replace(/-/g, " ")}
+            </Link>
+          ))}
         </div>
       </div>
     </div>
