@@ -16,14 +16,14 @@ export function HumorMixEditRow({ row }: { row: Row }) {
   );
 
   const displayValue =
-    typeof row.value === "object"
-      ? JSON.stringify(row.value)
-      : String(row.value ?? row.amount ?? row.weight ?? "");
+    typeof row.description === "object"
+      ? JSON.stringify(row.description)
+      : String(row.description ?? row.value ?? row.amount ?? row.weight ?? "");
 
   return (
     <form action={formAction} className="flex items-center gap-2">
       <input type="hidden" name="id" value={id} />
-      <input type="hidden" name="name" value={String(row.name ?? row.key ?? "")} />
+      <input type="hidden" name="name" value={String(row.name ?? row.theme ?? row.key ?? "")} />
       <input
         name="value"
         defaultValue={displayValue}

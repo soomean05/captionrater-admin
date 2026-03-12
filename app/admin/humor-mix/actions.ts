@@ -13,20 +13,20 @@ export async function updateHumorMix(formData: FormData) {
   const supabase = createAdminClient();
   const updates: Record<string, unknown> = {};
   const valueStr = formData.get("value");
-  if (valueStr != null) {
+  if (valueStr != null && valueStr !== "") {
     try {
-      updates.value = JSON.parse(valueStr as string);
+      updates.description = JSON.parse(valueStr as string);
     } catch {
-      updates.value = valueStr;
+      updates.description = valueStr;
     }
   }
   const name = formData.get("name");
-  if (name != null) updates.name = name;
+  if (name != null && name !== "") updates.name = name;
 
   if (Object.keys(updates).length === 0) return { error: "No fields to update" };
   updates.modified_datetime_utc = new Date().toISOString();
 
-  const { error } = await supabase.from("humor_mix").update(updates).eq("id", id);
+  const { error } = await supabase.from("humor_themes").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/humor-mix");
