@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
 import { formatSupabaseError } from "@/lib/admin/formatError";
 
-const TABLE_NAMES = ["whitelisted_email_addresses", "whitelisted_emails"] as const;
+const TABLE_NAMES = ["whitelist_email_addresses", "whitelisted_email_addresses", "whitelisted_emails"] as const;
 
 function normalizeEmail(s: string): string {
   return s.trim().toLowerCase();

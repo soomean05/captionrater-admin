@@ -14,6 +14,7 @@ type TableTest = {
 export default async function AdminSchemaCheckPage() {
   const supabase = createAdminClient();
   const tablesToTest = [
+    "whitelist_email_addresses",
     "whitelisted_email_addresses",
     "whitelisted_emails",
     "llm_responses",

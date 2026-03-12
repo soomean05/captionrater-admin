@@ -12,6 +12,7 @@ export default async function AdminWhitelistedEmailsPage({
 }) {
   const { error: paramError } = await searchParams;
   const { data, error } = await listTableWithFallback([
+    "whitelist_email_addresses",
     "whitelisted_email_addresses",
     "whitelisted_emails",
   ]);
@@ -21,7 +22,7 @@ export default async function AdminWhitelistedEmailsPage({
     <div className="space-y-6">
       <AdminPageHeader
         title="Whitelisted Emails"
-        subtitle="Full CRUD for whitelisted_email_addresses table."
+        subtitle="Full CRUD for whitelist_email_addresses table."
       />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
