@@ -1,6 +1,7 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { getAdminClient } from "@/lib/admin/queries";
+import { formatSupabaseError } from "@/lib/admin/formatError";
 import { HumorMixEditRow } from "./HumorMixEditRow";
 
 export default async function AdminHumorMixPage() {
@@ -16,7 +17,7 @@ export default async function AdminHumorMixPage() {
       />
 
       <AdminTable
-        error={error?.message}
+        error={error ? formatSupabaseError(error) : null}
         empty={rows.length === 0}
         emptyMessage="No humor mix records found."
         colSpan={4}

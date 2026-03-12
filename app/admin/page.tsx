@@ -75,6 +75,16 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
+      <p className="text-sm text-zinc-600">
+        <Link
+          href="/admin/schema-check"
+          className="font-medium text-zinc-900 underline hover:no-underline"
+        >
+          Schema check
+        </Link>
+        {" — test table access and discover column names for broken pages"}
+      </p>
+
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-zinc-900">Quick links</h2>
         <div className="mt-3 flex flex-wrap gap-2">

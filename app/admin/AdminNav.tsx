@@ -20,6 +20,7 @@ const navItems = [
   { href: "/admin/llm-responses", label: "LLM Responses" },
   { href: "/admin/allowed-signup-domains", label: "Allowed Signup Domains" },
   { href: "/admin/whitelisted-emails", label: "Whitelisted Emails" },
+  { href: "/admin/schema-check", label: "Schema Check" },
 ] as const;
 
 export function AdminNav() {

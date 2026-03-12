@@ -1,7 +1,8 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { createWhitelistedEmail } from "./actions";
-import { listTable } from "@/lib/admin/queries";
+import { listTableWithFallback } from "@/lib/admin/queries";
+import { formatSupabaseError } from "@/lib/admin/formatError";
 import { WhitelistedEmailsRow } from "./WhitelistedEmailsRow";
 
 export default async function AdminWhitelistedEmailsPage({
@@ -10,7 +11,10 @@ export default async function AdminWhitelistedEmailsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error: paramError } = await searchParams;
-  const { data, error } = await listTable("whitelisted_email_addresses");
+  const { data, error } = await listTableWithFallback([
+    "whitelisted_email_addresses",
+    "whitelisted_emails",
+  ]);
   const rows = (data ?? []) as Record<string, unknown>[];
 
   return (
@@ -54,7 +58,7 @@ export default async function AdminWhitelistedEmailsPage({
       )}
 
       <AdminTable
-        error={error?.message}
+        error={error ? formatSupabaseError(error) : null}
         empty={rows.length === 0}
         emptyMessage="No whitelisted emails found."
         colSpan={3}
@@ -69,7 +73,7 @@ export default async function AdminWhitelistedEmailsPage({
       >
         {rows.map((row) => (
           <WhitelistedEmailsRow
-            key={String(row.id ?? row.email)}
+            key={String(row.id ?? row.email ?? row.whitelisted_email)}
             row={row}
           />
         ))}

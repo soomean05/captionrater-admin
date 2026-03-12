@@ -19,10 +19,10 @@ export function WhitelistedEmailsRow({ row }: { row: Row }) {
     <tr className="border-b border-zinc-100 last:border-0">
       <td className="px-4 py-3" colSpan={2}>
         <form action={formAction} className="flex flex-wrap items-center gap-2">
-          <input type="hidden" name="id" value={String(row.id ?? row.email ?? "")} />
+          <input type="hidden" name="id" value={String(row.id ?? row.email ?? row.whitelisted_email ?? "")} />
           <input
             name="email"
-            defaultValue={String(row.email ?? "").toLowerCase()}
+            defaultValue={String(row.email ?? row.whitelisted_email ?? "").toLowerCase()}
             placeholder="Email"
             type="email"
             className="min-w-[200px] rounded border border-zinc-300 px-2 py-1 text-sm lowercase"
@@ -50,7 +50,7 @@ export function WhitelistedEmailsRow({ row }: { row: Row }) {
       <td className="px-4 py-3 text-right">
         <DeleteButton
           action={deleteWhitelistedEmail}
-          id={String(row.id ?? row.email)}
+          id={String(row.id ?? row.email ?? row.whitelisted_email)}
           confirmMessage="Delete this whitelisted email?"
         />
       </td>

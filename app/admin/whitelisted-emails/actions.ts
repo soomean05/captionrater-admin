@@ -4,9 +4,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
+import { formatSupabaseError } from "@/lib/admin/formatError";
+
+const TABLE_NAMES = ["whitelisted_email_addresses", "whitelisted_emails"] as const;
 
 function normalizeEmail(s: string): string {
   return s.trim().toLowerCase();
+}
+
+async function tryTables(
+  fn: (table: string) => Promise<{ error: { message: string; code?: string } | null }>
+): Promise<{ error: { message: string; code?: string } | null }> {
+  let lastError: { message: string; code?: string } | null = null;
+  for (const table of TABLE_NAMES) {
+    const { error } = await fn(table);
+    if (!error) return { error: null };
+    lastError = error;
+    if (error.code === "42P01") continue;
+    break;
+  }
+  return { error: lastError };
 }
 
 export async function createWhitelistedEmail(formData: FormData): Promise<void> {
@@ -18,11 +35,15 @@ export async function createWhitelistedEmail(formData: FormData): Promise<void> 
   }
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("whitelisted_email_addresses")
-    .insert({ email, notes: notes || null });
+  const { error } = await tryTables(async (table) => {
+    const r = await supabase.from(table).insert({ email, notes: notes || null });
+    return { error: r.error };
+  });
   if (error) {
-    redirect("/admin/whitelisted-emails?error=" + encodeURIComponent(error.message));
+    redirect(
+      "/admin/whitelisted-emails?error=" +
+        encodeURIComponent(formatSupabaseError(error) ?? error.message)
+    );
   }
   revalidatePath("/admin/whitelisted-emails");
 }
@@ -35,15 +56,18 @@ export async function updateWhitelistedEmail(formData: FormData) {
   if (!id || !email) return { error: "ID and email required" };
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("whitelisted_email_addresses")
-    .update({
-      email,
-      notes: notes || null,
-      modified_datetime_utc: new Date().toISOString(),
-    })
-    .eq("id", id);
-  if (error) return { error: error.message };
+  const { error } = await tryTables(async (table) => {
+    const r = await supabase
+      .from(table)
+      .update({
+        email,
+        notes: notes || null,
+        modified_datetime_utc: new Date().toISOString(),
+      })
+      .eq("id", id);
+    return { error: r.error };
+  });
+  if (error) return { error: formatSupabaseError(error) ?? error.message };
   revalidatePath("/admin/whitelisted-emails");
   return { success: true };
 }
@@ -54,9 +78,9 @@ export async function deleteWhitelistedEmail(formData: FormData) {
   if (!id) return;
 
   const supabase = createAdminClient();
-  await supabase
-    .from("whitelisted_email_addresses")
-    .delete()
-    .eq("id", id);
+  await tryTables(async (table) => {
+    const r = await supabase.from(table).delete().eq("id", id);
+    return { error: r.error };
+  });
   revalidatePath("/admin/whitelisted-emails");
 }
