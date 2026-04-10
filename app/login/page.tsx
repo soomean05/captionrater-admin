@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isSuperadmin } from "@/lib/supabase/guards";
 import { SignInWithGoogleButton } from "./SignInWithGoogleButton";
 
 export default async function LoginPage({
@@ -14,7 +15,8 @@ export default async function LoginPage({
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims as { sub?: string } | undefined;
   if (claims?.sub) {
-    redirect("/admin");
+    const ok = await isSuperadmin(claims.sub);
+    redirect(ok ? "/admin" : "/not-authorized");
   }
 
   return (

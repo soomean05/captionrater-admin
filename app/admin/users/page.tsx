@@ -4,7 +4,7 @@ import { listProfiles } from "@/lib/admin/queries";
 
 export default async function AdminUsersPage() {
   const { data, error } = await listProfiles();
-  const rows = data ?? [];
+  const rows = (data ?? []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">
@@ -31,7 +31,7 @@ export default async function AdminUsersPage() {
           </tr>
         }
       >
-        {rows.map((row: Record<string, unknown>) => (
+        {rows.map((row) => (
           <tr
             key={String(row.id)}
             className="border-b border-zinc-100 last:border-0"

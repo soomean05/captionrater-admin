@@ -3,8 +3,10 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+type DeleteActionResult = void | { error?: string } | null | undefined;
+
 type DeleteButtonProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => DeleteActionResult | Promise<DeleteActionResult>;
   id: string;
   label?: string;
   confirmMessage?: string;
@@ -25,7 +27,11 @@ export function DeleteButton({
     const formData = new FormData();
     formData.set("id", id);
     startTransition(async () => {
-      await action(formData);
+      const result = (await action(formData)) as { error?: string } | void;
+      if (result && typeof result === "object" && "error" in result && result.error) {
+        window.alert(result.error);
+        return;
+      }
       router.refresh();
     });
   }

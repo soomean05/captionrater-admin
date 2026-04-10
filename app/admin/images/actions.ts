@@ -17,8 +17,9 @@ export async function createImage(formData: FormData) {
     const ext = file.name.split(".").pop() ?? "jpg";
     const path = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
     const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
-      contentType: file.type,
+      contentType: file.type || "application/octet-stream",
       upsert: false,
+      cacheControl: "3600",
     });
     if (uploadError) return { error: uploadError.message };
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
@@ -55,10 +56,11 @@ export async function deleteImage(formData: FormData) {
   await requireSuperadmin();
 
   const id = String(formData.get("id") ?? "").trim();
-  if (!id) return;
+  if (!id) return { error: "Missing id" };
 
   const supabase = createAdminClient();
-  await supabase.from("images").delete().eq("id", id);
+  const { error } = await supabase.from("images").delete().eq("id", id);
+  if (error) return { error: error.message };
 
   revalidatePath("/admin/images");
 }

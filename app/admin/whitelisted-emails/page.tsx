@@ -2,6 +2,10 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { createWhitelistedEmail } from "./actions";
 import { listTableWithFallback } from "@/lib/admin/queries";
+import {
+  WHITELIST_TABLE_CANDIDATES,
+  getWhitelistIdForRow,
+} from "@/lib/admin/whitelistEmail";
 import { formatSupabaseError } from "@/lib/admin/formatError";
 import { WhitelistedEmailsRow } from "./WhitelistedEmailsRow";
 
@@ -11,18 +15,14 @@ export default async function AdminWhitelistedEmailsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error: paramError } = await searchParams;
-  const { data, error } = await listTableWithFallback([
-    "whitelist_email_addresses",
-    "whitelisted_email_addresses",
-    "whitelisted_emails",
-  ]);
+  const { data, error } = await listTableWithFallback([...WHITELIST_TABLE_CANDIDATES]);
   const rows = (data ?? []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="Whitelisted Emails"
-        subtitle="Full CRUD for whitelist_email_addresses table."
+        subtitle="Full CRUD for the email whitelist table (name may be whitelisted_emails or similar)."
       />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -74,7 +74,7 @@ export default async function AdminWhitelistedEmailsPage({
       >
         {rows.map((row) => (
           <WhitelistedEmailsRow
-            key={String(row.id ?? row.email ?? row.whitelisted_email)}
+            key={getWhitelistIdForRow(row as Record<string, unknown>)}
             row={row}
           />
         ))}

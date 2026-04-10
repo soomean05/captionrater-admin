@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isSuperadmin } from "@/lib/supabase/guards";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -18,5 +19,12 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.redirect(`${origin}/admin`);
+  const { data } = await supabase.auth.getClaims();
+  const sub = data?.claims?.sub as string | undefined;
+  if (!sub) {
+    return NextResponse.redirect(`${origin}/login?error=no_session`);
+  }
+
+  const ok = await isSuperadmin(sub);
+  return NextResponse.redirect(`${origin}${ok ? "/admin" : "/not-authorized"}`);
 }

@@ -27,7 +27,8 @@ export function AdminTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-      <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] text-left text-sm">
         {headers && (
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
             {headers}
@@ -57,6 +58,7 @@ export function AdminTable({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -24,6 +24,8 @@ export function ImagesRow({ row }: { row: Row }) {
           <img
             src={url}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-14 w-14 rounded-lg object-cover ring-1 ring-zinc-200"
           />
         ) : (
@@ -36,7 +38,7 @@ export function ImagesRow({ row }: { row: Row }) {
           <input
             name="url"
             defaultValue={url}
-            className="min-w-[200px] rounded border border-zinc-300 px-2 py-1 text-sm"
+            className="min-w-[200px] max-w-[min(100%,28rem)] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <button
             type="submit"

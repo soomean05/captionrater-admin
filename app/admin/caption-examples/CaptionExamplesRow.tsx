@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateCaptionExample, deleteCaptionExample } from "./actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { getCaptionExampleTextFromRow } from "@/lib/admin/captionExamples";
 
 type Row = Record<string, unknown>;
 
@@ -22,7 +23,7 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
           <input type="hidden" name="id" value={String(row.id)} />
           <input
             name="example_text"
-            defaultValue={String(row.example_text ?? row.exampleText ?? "")}
+            defaultValue={getCaptionExampleTextFromRow(row)}
             placeholder="Example text"
             className="min-w-[200px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />

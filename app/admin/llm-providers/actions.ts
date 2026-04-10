@@ -58,9 +58,10 @@ export async function updateLlmProvider(formData: FormData) {
 export async function deleteLlmProvider(formData: FormData) {
   await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
-  if (!id) return;
+  if (!id) return { error: "Missing id" };
 
   const supabase = createAdminClient();
-  await supabase.from("llm_providers").delete().eq("id", id);
+  const { error } = await supabase.from("llm_providers").delete().eq("id", id);
+  if (error) return { error: error.message };
   revalidatePath("/admin/llm-providers");
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireSuperadmin } from "@/lib/supabase/guards";
-import { signOut } from "./actions";
+import { signOut } from "@/lib/auth/actions";
 import { AdminNav } from "./AdminNav";
 
 export default async function AdminLayout({

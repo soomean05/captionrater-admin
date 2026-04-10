@@ -10,7 +10,7 @@ export function ImageCreateForm() {
   );
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3">
+    <form action={formAction} encType="multipart/form-data" className="flex flex-wrap items-end gap-3">
       <div>
         <label className="mb-1 block text-xs font-medium text-zinc-600">URL</label>
         <input
