@@ -13,7 +13,7 @@ export function ImagesRow({ row }: { row: Row }) {
     null as { error?: string; success?: boolean } | null
   );
 
-  const url = String(row.url ?? row.image_url ?? row.public_url ?? "");
+  const url = String(row.url ?? "");
   const id = String(row.id ?? "");
 
   return (

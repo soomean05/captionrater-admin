@@ -35,7 +35,7 @@ export default async function AdminCaptionsPage({
         }
       >
         {rows.map((row) => {
-          const captionText = String(row.text ?? row.caption ?? "").trim() || "—";
+          const captionText = String(row.content ?? "").trim() || "—";
           return (
             <tr key={String(row.id)} className="border-b border-zinc-100 last:border-0">
               <td className="px-4 py-3 font-mono text-xs text-zinc-700">{String(row.id ?? "—")}</td>
