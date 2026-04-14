@@ -1,26 +1,25 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
 import { listTablePaginated } from "@/lib/admin/queries";
 import { ImageCreateForm } from "./ImageCreateForm";
 import { ImagesRow } from "./ImagesRow";
 
-const PAGE_SIZE = 20;
-
 export default async function AdminImagesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page: rawPage } = await searchParams;
-  const parsed = parseInt(rawPage ?? "1", 10);
-  const page = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
 
   const { data, error, count } = await listTablePaginated(
     "images",
     page,
-    PAGE_SIZE,
-    "created_datetime_utc"
+    pageSize,
+    "created_datetime_utc",
+    "id,url,image_url,public_url,created_datetime_utc,created_at"
   );
   const rows = (data ?? []) as Record<string, unknown>[];
   const total = count ?? 0;
@@ -39,7 +38,8 @@ export default async function AdminImagesPage({
         </div>
         <p className="mt-2 max-w-prose text-xs leading-relaxed text-zinc-500">
           Set <code className="rounded bg-zinc-100 px-1">NEXT_PUBLIC_IMAGES_BUCKET</code> to your
-          Supabase Storage bucket name (default: <code className="rounded bg-zinc-100 px-1">images</code>
+          Supabase Storage bucket name (default:{" "}
+          <code className="rounded bg-zinc-100 px-1">images</code>
           ). The bucket should allow public read if you use public URLs for previews.
         </p>
       </div>
@@ -63,12 +63,14 @@ export default async function AdminImagesPage({
         ))}
       </AdminTable>
 
-      {total > PAGE_SIZE ? (
+      {!error ? (
         <PaginationBar
-          hrefBase="/admin/images"
+          pathname="/admin/images"
           page={page}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
           total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
         />
       ) : null}
     </div>

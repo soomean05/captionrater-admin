@@ -6,6 +6,15 @@ import { requireSuperadmin } from "@/lib/supabase/guards";
 
 const BUCKET = process.env.NEXT_PUBLIC_IMAGES_BUCKET ?? "images";
 
+function isMissingColumnError(error: { message?: string; code?: string }): boolean {
+  const m = (error.message ?? "").toLowerCase();
+  return (
+    error.code === "PGRST204" ||
+    error.code === "42703" ||
+    (m.includes("column") && (m.includes("schema cache") || m.includes("does not exist")))
+  );
+}
+
 export async function createImage(formData: FormData) {
   await requireSuperadmin();
 
@@ -28,10 +37,23 @@ export async function createImage(formData: FormData) {
 
   if (!url) return { error: "Provide URL or upload a file" };
 
-  const { error } = await supabase.from("images").insert({ url });
-  if (error) return { error: error.message };
-  revalidatePath("/admin/images");
-  return { success: true };
+  const insertVariants: Record<string, unknown>[] = [
+    { url },
+    { image_url: url },
+    { public_url: url },
+  ];
+  let insertError: { message: string; code?: string } | null = null;
+  for (const payload of insertVariants) {
+    const { error } = await supabase.from("images").insert(payload);
+    if (!error) {
+      revalidatePath("/admin/images");
+      return { success: true };
+    }
+    insertError = error;
+    if (!isMissingColumnError(error)) return { error: error.message };
+  }
+  if (insertError) return { error: insertError.message };
+  return { error: "Failed to insert image row" };
 }
 
 export async function updateImage(formData: FormData) {
@@ -42,14 +64,26 @@ export async function updateImage(formData: FormData) {
   if (!id || !url) return { error: "ID and URL required" };
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("images")
-    .update({ url })
-    .eq("id", id);
-
-  if (error) return { error: error.message };
-  revalidatePath("/admin/images");
-  return { success: true };
+  const updateVariants: Record<string, unknown>[] = [
+    { url },
+    { image_url: url },
+    { public_url: url },
+  ];
+  let updateError: { message: string; code?: string } | null = null;
+  for (const payload of updateVariants) {
+    const { error } = await supabase
+      .from("images")
+      .update(payload)
+      .eq("id", id);
+    if (!error) {
+      revalidatePath("/admin/images");
+      return { success: true };
+    }
+    updateError = error;
+    if (!isMissingColumnError(error)) return { error: error.message };
+  }
+  if (updateError) return { error: updateError.message };
+  return { error: "Failed to update image row" };
 }
 
 export async function deleteImage(formData: FormData) {

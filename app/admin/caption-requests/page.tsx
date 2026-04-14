@@ -1,17 +1,23 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
-import { listTable } from "@/lib/admin/queries";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTablePaginated } from "@/lib/admin/queries";
 
-export default async function AdminCaptionRequestsPage() {
-  const { data, error } = await listTable("caption_requests");
+export default async function AdminCaptionRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const { data, error, count } = await listTablePaginated("caption_requests", page, pageSize);
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Caption Requests"
-        subtitle="Read-only."
-      />
+      <AdminPageHeader title="Caption Requests" subtitle="Read-only." />
 
       <AdminTable
         error={error?.message}
@@ -40,7 +46,9 @@ export default async function AdminCaptionRequestsPage() {
                 {String(row.status ?? "—")}
               </span>
             </td>
-            <td className="px-4 py-3 font-mono text-xs text-zinc-700">{String(row.profile_id ?? "—")}</td>
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.profile_id ?? "—")}
+            </td>
             <td className="px-4 py-3 text-zinc-700">
               {row.created_datetime_utc
                 ? new Date(row.created_datetime_utc as string).toLocaleString()
@@ -54,6 +62,17 @@ export default async function AdminCaptionRequestsPage() {
           </tr>
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/caption-requests"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

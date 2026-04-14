@@ -1,22 +1,32 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
-import { createWhitelistedEmail } from "./actions";
-import { listTableWithFallback } from "@/lib/admin/queries";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTableWithFallbackPaginated } from "@/lib/admin/queries";
 import {
   WHITELIST_TABLE_CANDIDATES,
   getWhitelistIdForRow,
 } from "@/lib/admin/whitelistEmail";
 import { formatSupabaseError } from "@/lib/admin/formatError";
+import { createWhitelistedEmail } from "./actions";
 import { WhitelistedEmailsRow } from "./WhitelistedEmailsRow";
 
 export default async function AdminWhitelistedEmailsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { error: paramError } = await searchParams;
-  const { data, error } = await listTableWithFallback([...WHITELIST_TABLE_CANDIDATES]);
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const paramError = typeof sp.error === "string" ? sp.error : undefined;
+
+  const { data, error, count } = await listTableWithFallbackPaginated(
+    [...WHITELIST_TABLE_CANDIDATES],
+    page,
+    pageSize
+  );
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -27,10 +37,7 @@ export default async function AdminWhitelistedEmailsPage({
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create whitelisted email</h2>
-        <form
-          action={createWhitelistedEmail}
-          className="mt-3 flex flex-wrap gap-3"
-        >
+        <form action={createWhitelistedEmail} className="mt-3 flex flex-wrap gap-3">
           <input
             name="email"
             placeholder="Email"
@@ -79,6 +86,17 @@ export default async function AdminWhitelistedEmailsPage({
           />
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/whitelisted-emails"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

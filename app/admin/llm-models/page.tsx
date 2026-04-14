@@ -1,24 +1,32 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTablePaginated } from "@/lib/admin/queries";
 import { createLlmModel } from "./actions";
-import { listTable } from "@/lib/admin/queries";
 import { LlmModelsRow } from "./LlmModelsRow";
 
 export default async function AdminLlmModelsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { error: paramError } = await searchParams;
-  const { data, error } = await listTable("llm_models", "created_datetime_utc");
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const paramError = typeof sp.error === "string" ? sp.error : undefined;
+
+  const { data, error, count } = await listTablePaginated(
+    "llm_models",
+    page,
+    pageSize,
+    "created_datetime_utc"
+  );
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="LLM Models"
-        subtitle="Full CRUD for llm_models table."
-      />
+      <AdminPageHeader title="LLM Models" subtitle="Full CRUD for llm_models table." />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create LLM model</h2>
@@ -79,6 +87,17 @@ export default async function AdminLlmModelsPage({
           <LlmModelsRow key={String(row.id)} row={row} />
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/llm-models"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

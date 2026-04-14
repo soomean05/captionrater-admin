@@ -51,7 +51,8 @@ export async function listTablePaginated(
   tableName: string,
   page: number,
   pageSize: number,
-  preferOrder?: string
+  preferOrder?: string,
+  selectColumns = "*"
 ): Promise<{
   data: unknown[] | null;
   error: { message: string; code?: string } | null;
@@ -69,7 +70,7 @@ export async function listTablePaginated(
   for (const col of candidates) {
     const { data, error, count } = await supabase
       .from(tableName)
-      .select("*", { count: "exact" })
+      .select(selectColumns, { count: "exact" })
       .order(col, { ascending: false })
       .range(from, to);
     if (!error) return { data: data ?? [], error: null, count: count ?? 0 };
@@ -78,8 +79,102 @@ export async function listTablePaginated(
 
   const { data, error, count } = await supabase
     .from(tableName)
-    .select("*", { count: "exact" })
+    .select(selectColumns, { count: "exact" })
     .range(from, to);
+  return { data: data ?? [], error, count: count ?? 0 };
+}
+
+/**
+ * Paginated fallback across candidate table names (e.g. whitelisted email tables).
+ */
+export async function listTableWithFallbackPaginated(
+  tableNames: string[],
+  page: number,
+  pageSize: number,
+  orderBy?: string,
+  selectColumns = "*"
+): Promise<{
+  data: unknown[] | null;
+  error: { message: string; code?: string; details?: string; hint?: string } | null;
+  resolvedTable: string | null;
+  count: number | null;
+}> {
+  const supabase = createAdminClient();
+  const safePage = Math.max(1, page);
+  const from = (safePage - 1) * pageSize;
+  const to = from + pageSize - 1;
+  let lastError: { message: string; code?: string; details?: string; hint?: string } | null =
+    null;
+
+  outer: for (const table of tableNames) {
+    const prefer = orderBy ?? defaultOrderBy;
+    const candidates = [prefer, ...ORDER_FALLBACKS.filter((c) => c !== prefer)];
+
+    for (const col of candidates) {
+      const { data, error, count } = await supabase
+        .from(table)
+        .select(selectColumns, { count: "exact" })
+        .order(col, { ascending: false })
+        .range(from, to);
+      if (!error) {
+        return { data: data ?? [], error: null, resolvedTable: table, count: count ?? 0 };
+      }
+      if (error.code === "42P01") {
+        lastError = error;
+        continue outer;
+      }
+      if (!isOrderColumnError(error)) {
+        lastError = error;
+        break;
+      }
+    }
+
+    const { data, error, count } = await supabase
+      .from(table)
+      .select(selectColumns, { count: "exact" })
+      .range(from, to);
+    if (!error) {
+      return { data: data ?? [], error: null, resolvedTable: table, count: count ?? 0 };
+    }
+    if (error.code === "42P01") {
+      lastError = error;
+      continue;
+    }
+    lastError = error;
+  }
+
+  return { data: null, error: lastError, resolvedTable: null, count: null };
+}
+
+/** humor_flavor_steps: stable sort by flavor + step when columns exist. */
+export async function listHumorFlavorStepsPaginated(
+  page: number,
+  pageSize: number
+): Promise<{
+  data: unknown[] | null;
+  error: { message: string; code?: string } | null;
+  count: number | null;
+}> {
+  const supabase = createAdminClient();
+  const safePage = Math.max(1, page);
+  const from = (safePage - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let result = await supabase
+    .from("humor_flavor_steps")
+    .select("*", { count: "exact" })
+    .order("humor_flavor_id", { ascending: true })
+    .order("step_number", { ascending: true })
+    .range(from, to);
+
+  if (result.error?.code === "42703" || isOrderColumnError(result.error)) {
+    result = await supabase
+      .from("humor_flavor_steps")
+      .select("*", { count: "exact" })
+      .range(from, to);
+  }
+
+  const { data, error, count } = result;
   return { data: data ?? [], error, count: count ?? 0 };
 }
 

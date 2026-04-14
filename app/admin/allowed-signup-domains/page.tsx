@@ -1,17 +1,27 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTablePaginated } from "@/lib/admin/queries";
 import { createAllowedSignupDomain } from "./actions";
-import { listTable } from "@/lib/admin/queries";
 import { AllowedSignupDomainsRow } from "./AllowedSignupDomainsRow";
 
 export default async function AdminAllowedSignupDomainsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { error: paramError } = await searchParams;
-  const { data, error } = await listTable("allowed_signup_domains");
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const paramError = typeof sp.error === "string" ? sp.error : undefined;
+
+  const { data, error, count } = await listTablePaginated(
+    "allowed_signup_domains",
+    page,
+    pageSize
+  );
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -22,10 +32,7 @@ export default async function AdminAllowedSignupDomainsPage({
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create allowed signup domain</h2>
-        <form
-          action={createAllowedSignupDomain}
-          className="mt-3 flex flex-wrap gap-3"
-        >
+        <form action={createAllowedSignupDomain} className="mt-3 flex flex-wrap gap-3">
           <input
             name="domain"
             placeholder="Domain (e.g. example.com)"
@@ -79,6 +86,17 @@ export default async function AdminAllowedSignupDomainsPage({
           />
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/allowed-signup-domains"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

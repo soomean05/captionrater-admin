@@ -1,17 +1,23 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
-import { listProfiles } from "@/lib/admin/queries";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTablePaginated } from "@/lib/admin/queries";
 
-export default async function AdminUsersPage() {
-  const { data, error } = await listProfiles();
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const { data, error, count } = await listTablePaginated("profiles", page, pageSize);
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Users"
-        subtitle="Reading from profiles."
-      />
+      <AdminPageHeader title="Users" subtitle="Reading from profiles." />
 
       <AdminTable
         error={error?.message}
@@ -44,9 +50,13 @@ export default async function AdminUsersPage() {
             <td className="px-4 py-3 text-zinc-700">{String(row.last_name ?? "—")}</td>
             <td className="px-4 py-3">
               {row.is_superadmin ? (
-                <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">TRUE</span>
+                <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">
+                  TRUE
+                </span>
               ) : (
-                <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">FALSE</span>
+                <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
+                  FALSE
+                </span>
               )}
             </td>
             <td className="px-4 py-3">
@@ -69,6 +79,17 @@ export default async function AdminUsersPage() {
           </tr>
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/users"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,24 +1,32 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listTablePaginated } from "@/lib/admin/queries";
 import { createLlmProvider } from "./actions";
-import { listTable } from "@/lib/admin/queries";
 import { LlmProvidersRow } from "./LlmProvidersRow";
 
 export default async function AdminLlmProvidersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { error: paramError } = await searchParams;
-  const { data, error } = await listTable("llm_providers", "created_datetime_utc");
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const paramError = typeof sp.error === "string" ? sp.error : undefined;
+
+  const { data, error, count } = await listTablePaginated(
+    "llm_providers",
+    page,
+    pageSize,
+    "created_datetime_utc"
+  );
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="LLM Providers"
-        subtitle="Full CRUD for llm_providers table."
-      />
+      <AdminPageHeader title="LLM Providers" subtitle="Full CRUD for llm_providers table." />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create LLM provider</h2>
@@ -82,6 +90,17 @@ export default async function AdminLlmProvidersPage({
           <LlmProvidersRow key={String(row.id)} row={row} />
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/llm-providers"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }

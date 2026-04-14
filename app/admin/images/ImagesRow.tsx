@@ -13,7 +13,7 @@ export function ImagesRow({ row }: { row: Row }) {
     null as { error?: string; success?: boolean } | null
   );
 
-  const url = String(row.url ?? "");
+  const url = String(row.url ?? row.image_url ?? row.public_url ?? "");
   const id = String(row.id ?? "");
 
   return (
@@ -51,8 +51,8 @@ export function ImagesRow({ row }: { row: Row }) {
         </form>
       </td>
       <td className="px-4 py-3 text-zinc-700">
-        {row.created_datetime_utc
-          ? new Date(row.created_datetime_utc as string).toLocaleString()
+        {row.created_datetime_utc || row.created_at
+          ? new Date(String(row.created_datetime_utc ?? row.created_at)).toLocaleString()
           : "—"}
       </td>
       <td className="px-4 py-3 text-right">

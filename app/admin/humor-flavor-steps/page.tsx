@@ -1,21 +1,20 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
-import { getAdminClient } from "@/lib/admin/queries";
+import { PaginationBar } from "@/components/admin/PaginationBar";
+import { getAdminListPagination } from "@/lib/admin/pagination";
+import { listHumorFlavorStepsPaginated } from "@/lib/admin/queries";
 import { formatSupabaseError } from "@/lib/admin/formatError";
 
-export default async function AdminHumorFlavorStepsPage() {
-  const supabase = getAdminClient();
-  // Use select only first; ordering by humor_flavor_id/step_number only if columns exist
-  let result = await supabase
-    .from("humor_flavor_steps")
-    .select("*")
-    .order("humor_flavor_id", { ascending: true })
-    .order("step_number", { ascending: true });
-  if (result.error?.code === "42703") {
-    result = await supabase.from("humor_flavor_steps").select("*");
-  }
-  const { data, error } = result;
+export default async function AdminHumorFlavorStepsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const { page, pageSize, preserve } = getAdminListPagination(sp);
+  const { data, error, count } = await listHumorFlavorStepsPaginated(page, pageSize);
   const rows = (data ?? []) as Record<string, unknown>[];
+  const total = count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -42,8 +41,12 @@ export default async function AdminHumorFlavorStepsPage() {
         {rows.map((row) => (
           <tr key={String(row.id)} className="border-b border-zinc-100 last:border-0">
             <td className="px-4 py-3 font-mono text-xs text-zinc-700">{String(row.id ?? "—")}</td>
-            <td className="px-4 py-3 font-mono text-xs text-zinc-700">{String(row.humor_flavor_id ?? row.flavor_id ?? "—")}</td>
-            <td className="px-4 py-3 text-zinc-700">{String(row.step_number ?? row.step_order ?? row.step_index ?? "—")}</td>
+            <td className="px-4 py-3 font-mono text-xs text-zinc-700">
+              {String(row.humor_flavor_id ?? row.flavor_id ?? "—")}
+            </td>
+            <td className="px-4 py-3 text-zinc-700">
+              {String(row.step_number ?? row.step_order ?? row.step_index ?? "—")}
+            </td>
             <td className="max-w-md truncate px-4 py-3 text-zinc-700">
               {String(row.content ?? row.prompt ?? row.text ?? row.instruction ?? "—")}
             </td>
@@ -55,6 +58,17 @@ export default async function AdminHumorFlavorStepsPage() {
           </tr>
         ))}
       </AdminTable>
+
+      {!error ? (
+        <PaginationBar
+          pathname="/admin/humor-flavor-steps"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          rowCount={rows.length}
+          preserveParams={preserve}
+        />
+      ) : null}
     </div>
   );
 }
