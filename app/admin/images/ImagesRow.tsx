@@ -51,8 +51,8 @@ export function ImagesRow({ row }: { row: Row }) {
         </form>
       </td>
       <td className="px-4 py-3 text-zinc-700">
-        {row.created_datetime_utc || row.created_at
-          ? new Date(String(row.created_datetime_utc ?? row.created_at)).toLocaleString()
+        {row.created_datetime_utc
+          ? new Date(String(row.created_datetime_utc)).toLocaleString()
           : "—"}
       </td>
       <td className="px-4 py-3 text-right">

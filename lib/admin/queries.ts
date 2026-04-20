@@ -13,9 +13,7 @@ function isOrderColumnError(error: { message?: string; code?: string } | null): 
 
 const ORDER_FALLBACKS = [
   "created_datetime_utc",
-  "created_at",
-  "inserted_at",
-  "updated_at",
+  "modified_datetime_utc",
   "id",
 ] as const;
 

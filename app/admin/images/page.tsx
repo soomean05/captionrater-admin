@@ -19,7 +19,7 @@ export default async function AdminImagesPage({
     page,
     pageSize,
     "created_datetime_utc",
-    "id,url,created_datetime_utc,created_at"
+    "id,url,created_datetime_utc"
   );
   const rows = (data ?? []) as Record<string, unknown>[];
   const total = count ?? 0;
