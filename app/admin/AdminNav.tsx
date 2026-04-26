@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/humor-mix", label: "Humor Mix" },
   { href: "/admin/terms", label: "Terms" },
   { href: "/admin/captions", label: "Captions" },
+  { href: "/admin/caption-rating-stats", label: "Caption Rating Stats" },
   { href: "/admin/caption-requests", label: "Caption Requests" },
   { href: "/admin/caption-examples", label: "Caption Examples" },
   { href: "/admin/llm-models", label: "LLM Models" },
