@@ -14,6 +14,8 @@ export default async function AdminLlmModelsPage({
   const sp = await searchParams;
   const { page, pageSize, preserve } = getAdminListPagination(sp);
   const paramError = typeof sp.error === "string" ? sp.error : undefined;
+  const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
+  const active = typeof sp.active === "string" ? sp.active : "all";
 
   const { data, error, count } = await listTablePaginated(
     "llm_models",
@@ -21,8 +23,18 @@ export default async function AdminLlmModelsPage({
     pageSize,
     "created_datetime_utc"
   );
-  const rows = (data ?? []) as Record<string, unknown>[];
-  const total = count ?? 0;
+  const allRows = (data ?? []) as Record<string, unknown>[];
+  const rows = allRows.filter((row) => {
+    const name = String(row.name ?? row.model_name ?? "").toLowerCase();
+    const provider = String(row.provider_id ?? row.llm_provider_id ?? "").toLowerCase();
+    const matchesQ = q ? name.includes(q) || provider.includes(q) : true;
+    const matchesActive =
+      active === "all" ||
+      (active === "yes" && row.is_active === true) ||
+      (active === "no" && row.is_active !== true);
+    return matchesQ && matchesActive;
+  });
+  const total = count ?? allRows.length;
 
   return (
     <div className="space-y-6">
@@ -66,6 +78,32 @@ export default async function AdminLlmModelsPage({
           {paramError}
         </div>
       )}
+
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+        <form method="get" className="flex flex-wrap gap-3">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search model or provider id"
+            className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          />
+          <select
+            name="active"
+            defaultValue={active}
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          >
+            <option value="all">All active states</option>
+            <option value="yes">Active</option>
+            <option value="no">Inactive</option>
+          </select>
+          <button
+            type="submit"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+          >
+            Apply
+          </button>
+        </form>
+      </div>
 
       <AdminTable
         error={error?.message}

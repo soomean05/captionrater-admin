@@ -74,6 +74,7 @@ export default async function AdminCaptionRatingStatsPage({
 }) {
   const sp = await searchParams;
   const page = parsePage(sp.page);
+  const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
 
   const supabase = createAdminClient();
   const votesResult = await supabase.from("caption_votes").select("*");
@@ -192,15 +193,22 @@ export default async function AdminCaptionRatingStatsPage({
     return b.avgScore - a.avgScore;
   });
 
-  const topTotal = topRated.length;
-  const mostTotal = mostRated.length;
+  const topSource = q
+    ? topRated.filter((r) => r.captionId.toLowerCase().includes(q))
+    : topRated;
+  const mostSource = q
+    ? mostRated.filter((r) => r.captionId.toLowerCase().includes(q))
+    : mostRated;
+
+  const topTotal = topSource.length;
+  const mostTotal = mostSource.length;
 
   const topFrom = (page - 1) * PAGE_SIZE;
   const topTo = topFrom + PAGE_SIZE;
   const mostFrom = (page - 1) * PAGE_SIZE;
   const mostTo = mostFrom + PAGE_SIZE;
-  const topPageRows = topRated.slice(topFrom, topTo);
-  const mostPageRows = mostRated.slice(mostFrom, mostTo);
+  const topPageRows = topSource.slice(topFrom, topTo);
+  const mostPageRows = mostSource.slice(mostFrom, mostTo);
 
   const captionIds = new Set<string>();
   for (const row of topPageRows) captionIds.add(row.captionId);
@@ -266,6 +274,23 @@ export default async function AdminCaptionRatingStatsPage({
         ))}
       </div>
 
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+        <form method="get" className="flex flex-wrap gap-3">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search caption ID"
+            className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-zinc-900">Top-Rated Captions</h2>
         <AdminTable
@@ -309,6 +334,7 @@ export default async function AdminCaptionRatingStatsPage({
           pageSize={PAGE_SIZE}
           total={topTotal}
           rowCount={topPageRows.length}
+          preserveParams={q ? { q } : undefined}
         />
       </div>
 
@@ -355,6 +381,7 @@ export default async function AdminCaptionRatingStatsPage({
           pageSize={PAGE_SIZE}
           total={mostTotal}
           rowCount={mostPageRows.length}
+          preserveParams={q ? { q } : undefined}
         />
       </div>
     </div>

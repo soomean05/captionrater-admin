@@ -20,9 +20,10 @@ function isMissingColumnError(error: { message?: string; code?: string }): boole
 
 export async function insertCaptionExampleRow(
   supabase: SupabaseClient,
-  payload: { text: string; humor_flavor_id: string | null }
+  payload: Record<string, unknown> & { text: string; humor_flavor_id: string | null }
 ): Promise<{ error: { message: string; code?: string } | null }> {
-  const base: Record<string, unknown> = {};
+  const base: Record<string, unknown> = { ...payload };
+  delete base.text;
   if (payload.humor_flavor_id) base.humor_flavor_id = payload.humor_flavor_id;
 
   const tries: Record<string, unknown>[] = [

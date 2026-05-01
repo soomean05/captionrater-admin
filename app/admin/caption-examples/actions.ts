@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
 import { insertCaptionExampleRow } from "@/lib/admin/captionExamples";
+import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 
 export async function createCaptionExample(formData: FormData): Promise<void> {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const exampleText = String(formData.get("example_text") ?? "").trim();
   const humorFlavorId = String(formData.get("humor_flavor_id") ?? "").trim();
   if (!exampleText) {
@@ -17,10 +18,15 @@ export async function createCaptionExample(formData: FormData): Promise<void> {
   }
 
   const supabase = createAdminClient();
-  const { error } = await insertCaptionExampleRow(supabase, {
+  let payload: Record<string, unknown> & { text: string; humor_flavor_id: string | null } = {
     text: exampleText,
     humor_flavor_id: humorFlavorId || null,
-  });
+  };
+  payload = {
+    ...payload,
+    ...(await withAuditFields(supabase, "caption_examples", payload, user.id, "create")),
+  };
+  const { error } = await insertCaptionExampleRow(supabase, payload);
   if (error) {
     redirect("/admin/caption-examples?error=" + encodeURIComponent(error.message));
   }
@@ -28,7 +34,7 @@ export async function createCaptionExample(formData: FormData): Promise<void> {
 }
 
 export async function updateCaptionExample(formData: FormData) {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const exampleText = String(formData.get("example_text") ?? "").trim();
   const humorFlavorId = String(formData.get("humor_flavor_id") ?? "").trim();
@@ -44,9 +50,8 @@ export async function updateCaptionExample(formData: FormData) {
   if (!existing) return { error: "Row not found" };
 
   const r = existing as Record<string, unknown>;
-  const updates: Record<string, unknown> = {
+  let updates: Record<string, unknown> = {
     humor_flavor_id: humorFlavorId || null,
-    modified_datetime_utc: new Date().toISOString(),
   };
   if (Object.prototype.hasOwnProperty.call(r, "caption_text")) {
     updates.caption_text = exampleText;
@@ -57,6 +62,9 @@ export async function updateCaptionExample(formData: FormData) {
   if (!("caption_text" in updates) && !("example_text" in updates)) {
     updates.caption_text = exampleText;
   }
+
+  updates = await withAuditFields(supabase, "caption_examples", updates, user.id, "update");
+  updates = await withModifiedDatetime(supabase, "caption_examples", updates);
 
   const { error } = await supabase.from("caption_examples").update(updates).eq("id", id);
   if (error) return { error: error.message };

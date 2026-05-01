@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
 import { formatSupabaseError } from "@/lib/admin/formatError";
+import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 import {
-  insertWhitelistedEmailRow,
   tryWhitelistTables,
 } from "@/lib/admin/whitelistEmail";
 
@@ -15,7 +15,7 @@ function normalizeEmail(s: string): string {
 }
 
 export async function createWhitelistedEmail(formData: FormData): Promise<void> {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   const notes = String(formData.get("notes") ?? "").trim();
   if (!email) {
@@ -23,7 +23,22 @@ export async function createWhitelistedEmail(formData: FormData): Promise<void> 
   }
 
   const supabase = createAdminClient();
-  const { error } = await insertWhitelistedEmailRow(supabase, email, notes || null);
+  const n = notes || null;
+  const { error } = await tryWhitelistTables(async (table) => {
+    const base = await withAuditFields(supabase, table, {}, user.id, "create");
+    const variants: Record<string, unknown>[] = [
+      { ...base, email, notes: n },
+      { ...base, email_address: email, notes: n },
+      { ...base, whitelisted_email: email, notes: n },
+    ];
+    let last: { message: string; code?: string } | null = null;
+    for (const insert of variants) {
+      const { error: insertErr } = await supabase.from(table).insert(insert);
+      if (!insertErr) return { error: null };
+      last = insertErr;
+    }
+    return { error: last };
+  });
   if (error) {
     redirect(
       "/admin/whitelisted-emails?error=" +
@@ -34,21 +49,22 @@ export async function createWhitelistedEmail(formData: FormData): Promise<void> 
 }
 
 export async function updateWhitelistedEmail(formData: FormData) {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   const notes = String(formData.get("notes") ?? "").trim();
   if (!id || !email) return { error: "ID and email required" };
 
   const supabase = createAdminClient();
-  const ts = new Date().toISOString();
   const n = notes || null;
 
   const { error } = await tryWhitelistTables(async (table) => {
+    let base = await withAuditFields(supabase, table, {}, user.id, "update");
+    base = await withModifiedDatetime(supabase, table, base);
     const variants: Record<string, unknown>[] = [
-      { email, notes: n, modified_datetime_utc: ts },
-      { email_address: email, notes: n, modified_datetime_utc: ts },
-      { whitelisted_email: email, notes: n, modified_datetime_utc: ts },
+      { ...base, email, notes: n },
+      { ...base, email_address: email, notes: n },
+      { ...base, whitelisted_email: email, notes: n },
     ];
 
     let last: { message: string; code?: string } | null = null;

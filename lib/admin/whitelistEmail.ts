@@ -44,13 +44,14 @@ export async function tryWhitelistTables(
 export async function insertWhitelistedEmailRow(
   supabase: SupabaseClient,
   email: string,
-  notes: string | null
+  notes: string | null,
+  extra: Record<string, unknown> = {}
 ): Promise<{ error: { message: string; code?: string } | null }> {
   const n = notes || null;
   const payloads: Record<string, unknown>[] = [
-    { email, notes: n },
-    { email_address: email, notes: n },
-    { whitelisted_email: email, notes: n },
+    { email, notes: n, ...extra },
+    { email_address: email, notes: n, ...extra },
+    { whitelisted_email: email, notes: n, ...extra },
   ];
 
   return tryWhitelistTables(async (table) => {

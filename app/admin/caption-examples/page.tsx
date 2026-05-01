@@ -14,6 +14,7 @@ export default async function AdminCaptionExamplesPage({
   const sp = await searchParams;
   const { page, pageSize, preserve } = getAdminListPagination(sp);
   const paramError = typeof sp.error === "string" ? sp.error : undefined;
+  const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
 
   const { data, error, count } = await listTablePaginated(
     "caption_examples",
@@ -21,8 +22,13 @@ export default async function AdminCaptionExamplesPage({
     pageSize,
     "created_datetime_utc"
   );
-  const rows = (data ?? []) as Record<string, unknown>[];
-  const total = count ?? 0;
+  const allRows = (data ?? []) as Record<string, unknown>[];
+  const rows = allRows.filter((row) => {
+    if (!q) return true;
+    const text = String(row.caption_text ?? row.example_text ?? "").toLowerCase();
+    return text.includes(q);
+  });
+  const total = count ?? allRows.length;
 
   return (
     <div className="space-y-6">
@@ -59,6 +65,23 @@ export default async function AdminCaptionExamplesPage({
           {paramError}
         </div>
       )}
+
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+        <form method="get" className="flex flex-wrap gap-3">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search example text"
+            className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+          >
+            Search
+          </button>
+        </form>
+      </div>
 
       <AdminTable
         error={error?.message}

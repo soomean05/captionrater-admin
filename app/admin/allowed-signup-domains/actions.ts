@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
+import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 
 function normalizeDomain(s: string): string {
   return s.trim().toLowerCase();
@@ -18,7 +19,7 @@ function isMissingColumnError(error: { message?: string; code?: string }): boole
 }
 
 export async function createAllowedSignupDomain(formData: FormData): Promise<void> {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const domain = normalizeDomain(String(formData.get("domain") ?? ""));
   const isActive =
     formData.get("is_active") === "true" || formData.get("is_active") === "on";
@@ -32,11 +33,12 @@ export async function createAllowedSignupDomain(formData: FormData): Promise<voi
   }
 
   const supabase = createAdminClient();
+  const audit = await withAuditFields(supabase, "allowed_signup_domains", {}, user.id, "create");
   const variants: Record<string, unknown>[] = [
-    { domain, is_active: enabled, is_enabled: enabled },
-    { domain, is_active: enabled },
-    { domain, is_enabled: enabled },
-    { domain },
+    { domain, is_active: enabled, is_enabled: enabled, ...audit },
+    { domain, is_active: enabled, ...audit },
+    { domain, is_enabled: enabled, ...audit },
+    { domain, ...audit },
   ];
 
   let lastErr: { message: string; code?: string } | null = null;
@@ -60,7 +62,7 @@ export async function createAllowedSignupDomain(formData: FormData): Promise<voi
 }
 
 export async function updateAllowedSignupDomain(formData: FormData) {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const domain = normalizeDomain(String(formData.get("domain") ?? ""));
   const isActive =
@@ -79,9 +81,8 @@ export async function updateAllowedSignupDomain(formData: FormData) {
 
   if (fetchErr) return { error: fetchErr.message };
 
-  const updates: Record<string, unknown> = {
+  let updates: Record<string, unknown> = {
     domain,
-    modified_datetime_utc: new Date().toISOString(),
   };
 
   if (existing && typeof existing === "object") {
@@ -91,6 +92,9 @@ export async function updateAllowedSignupDomain(formData: FormData) {
   } else {
     updates.is_active = enabled;
   }
+
+  updates = await withAuditFields(supabase, "allowed_signup_domains", updates, user.id, "update");
+  updates = await withModifiedDatetime(supabase, "allowed_signup_domains", updates);
 
   let { error } = await supabase.from("allowed_signup_domains").update(updates).eq("id", id);
   if (error) {

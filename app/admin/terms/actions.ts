@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
+import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 
 export async function createTerm(formData: FormData): Promise<void> {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const term = String(formData.get("term") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   if (!term) {
@@ -14,10 +15,13 @@ export async function createTerm(formData: FormData): Promise<void> {
   }
 
   const supabase = createAdminClient();
-  const { error } = await supabase.from("terms").insert({
+  let payload: Record<string, unknown> = {
     term,
     description: description || null,
-  });
+  };
+  payload = await withAuditFields(supabase, "terms", payload, user.id, "create");
+
+  const { error } = await supabase.from("terms").insert(payload);
   if (error) {
     redirect("/admin/terms?error=" + encodeURIComponent(error.message));
   }
@@ -25,21 +29,21 @@ export async function createTerm(formData: FormData): Promise<void> {
 }
 
 export async function updateTerm(formData: FormData) {
-  await requireSuperadmin();
+  const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const term = String(formData.get("term") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   if (!id || !term) return { error: "ID and term required" };
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("terms")
-    .update({
-      term,
-      description: description || null,
-      modified_datetime_utc: new Date().toISOString(),
-    })
-    .eq("id", id);
+  let updates: Record<string, unknown> = {
+    term,
+    description: description || null,
+  };
+  updates = await withAuditFields(supabase, "terms", updates, user.id, "update");
+  updates = await withModifiedDatetime(supabase, "terms", updates);
+
+  const { error } = await supabase.from("terms").update(updates).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin/terms");
   return { success: true };

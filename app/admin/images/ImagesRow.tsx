@@ -7,7 +7,21 @@ import { deleteImage } from "./actions";
 
 type Row = Record<string, unknown>;
 
-export function ImagesRow({ row }: { row: Row }) {
+type Props = {
+  row: Row;
+  supportsDescription: boolean;
+  supportsContext: boolean;
+  supportsIsPublic: boolean;
+  supportsIsCommonUse: boolean;
+};
+
+export function ImagesRow({
+  row,
+  supportsDescription,
+  supportsContext,
+  supportsIsPublic,
+  supportsIsCommonUse,
+}: Props) {
   const [state, formAction] = useActionState(
     async (_: unknown, fd: FormData) => updateImage(fd),
     null as { error?: string; success?: boolean } | null
@@ -40,6 +54,46 @@ export function ImagesRow({ row }: { row: Row }) {
             defaultValue={url}
             className="min-w-[200px] max-w-[min(100%,28rem)] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
+          {supportsDescription ? (
+            <input
+              name="description"
+              defaultValue={String(row.description ?? "")}
+              placeholder="Description"
+              className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
+            />
+          ) : null}
+          {supportsContext ? (
+            <input
+              name="context"
+              defaultValue={String(row.context ?? "")}
+              placeholder="Context"
+              className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
+            />
+          ) : null}
+          {supportsIsPublic ? (
+            <label className="flex items-center gap-1.5 text-xs text-zinc-700">
+              <input
+                type="checkbox"
+                name="is_public"
+                defaultChecked={Boolean(row.is_public)}
+                value="true"
+                className="rounded border-zinc-300"
+              />
+              Public
+            </label>
+          ) : null}
+          {supportsIsCommonUse ? (
+            <label className="flex items-center gap-1.5 text-xs text-zinc-700">
+              <input
+                type="checkbox"
+                name="is_common_use"
+                defaultChecked={Boolean(row.is_common_use)}
+                value="true"
+                className="rounded border-zinc-300"
+              />
+              Common
+            </label>
+          ) : null}
           <button
             type="submit"
             className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50"

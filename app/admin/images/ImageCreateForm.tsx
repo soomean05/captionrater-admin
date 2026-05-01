@@ -3,7 +3,19 @@
 import { useActionState } from "react";
 import { createImage } from "./actions";
 
-export function ImageCreateForm() {
+type Props = {
+  supportsDescription: boolean;
+  supportsContext: boolean;
+  supportsIsPublic: boolean;
+  supportsIsCommonUse: boolean;
+};
+
+export function ImageCreateForm({
+  supportsDescription,
+  supportsContext,
+  supportsIsPublic,
+  supportsIsCommonUse,
+}: Props) {
   const [state, formAction] = useActionState(
     async (_: unknown, fd: FormData) => createImage(fd),
     null as { error?: string; success?: boolean } | null
@@ -34,6 +46,43 @@ export function ImageCreateForm() {
       >
         Create
       </button>
+      {supportsDescription ? (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-600">Description</label>
+          <input
+            name="description"
+            placeholder="Optional description"
+            className="w-64 rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          />
+        </div>
+      ) : null}
+      {supportsContext ? (
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-600">Context</label>
+          <input
+            name="context"
+            placeholder="Optional context"
+            className="w-64 rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          />
+        </div>
+      ) : null}
+      {supportsIsPublic ? (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="is_public" value="true" className="rounded border-zinc-300" />
+          Public
+        </label>
+      ) : null}
+      {supportsIsCommonUse ? (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="is_common_use"
+            value="true"
+            className="rounded border-zinc-300"
+          />
+          Common use
+        </label>
+      ) : null}
       {state?.error && <span className="text-sm text-red-600">{state.error}</span>}
       {state?.success && <span className="text-sm text-emerald-600">Created</span>}
     </form>
