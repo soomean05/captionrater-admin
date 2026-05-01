@@ -47,7 +47,7 @@ export default async function AdminLayout({
               </Link>
             </div>
             <div className="hidden text-sm font-medium text-zinc-600 md:block">
-              SaaS control plane
+              Admin Dashboard
             </div>
             <div className="flex items-center gap-3">
               <Link
