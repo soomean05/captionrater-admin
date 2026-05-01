@@ -22,17 +22,18 @@ export function ImageCreateForm({
   );
 
   return (
-    <form action={formAction} encType="multipart/form-data" className="flex flex-wrap items-end gap-3">
+    <form action={formAction} encType="multipart/form-data" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div>
-        <label className="mb-1 block text-xs font-medium text-zinc-600">URL</label>
+        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Image URL</label>
         <input
           name="url"
           placeholder="https://… or leave empty to upload"
-          className="w-64 rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+          className="admin-input w-full"
         />
+        <p className="mt-1 text-xs text-zinc-500">Paste a direct URL, or use file upload.</p>
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-zinc-600">Or upload file</label>
+        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Upload File</label>
         <input
           name="file"
           type="file"
@@ -40,40 +41,34 @@ export function ImageCreateForm({
           className="block text-sm text-zinc-600 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-zinc-200"
         />
       </div>
-      <button
-        type="submit"
-        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-      >
-        Create
-      </button>
       {supportsDescription ? (
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600">Description</label>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Description</label>
           <input
             name="description"
             placeholder="Optional description"
-            className="w-64 rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-input w-full"
           />
         </div>
       ) : null}
       {supportsContext ? (
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600">Context</label>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600">Context</label>
           <input
             name="context"
             placeholder="Optional context"
-            className="w-64 rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-input w-full"
           />
         </div>
       ) : null}
       {supportsIsPublic ? (
-        <label className="flex items-center gap-2 text-sm">
+        <label className="admin-badge w-fit">
           <input type="checkbox" name="is_public" value="true" className="rounded border-zinc-300" />
           Public
         </label>
       ) : null}
       {supportsIsCommonUse ? (
-        <label className="flex items-center gap-2 text-sm">
+        <label className="admin-badge w-fit">
           <input
             type="checkbox"
             name="is_common_use"
@@ -83,8 +78,16 @@ export function ImageCreateForm({
           Common use
         </label>
       ) : null}
-      {state?.error && <span className="text-sm text-red-600">{state.error}</span>}
-      {state?.success && <span className="text-sm text-emerald-600">Created</span>}
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          className="admin-btn-primary"
+        >
+          Upload / Create
+        </button>
+        {state?.error && <span className="text-sm text-red-600">{state.error}</span>}
+        {state?.success && <span className="rounded-full bg-emerald-50 px-2 py-1 text-sm text-emerald-700">Created</span>}
+      </div>
     </form>
   );
 }

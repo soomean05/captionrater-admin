@@ -21,14 +21,13 @@ const navItems = [
   { href: "/admin/llm-responses", label: "LLM Responses" },
   { href: "/admin/allowed-signup-domains", label: "Allowed Signup Domains" },
   { href: "/admin/whitelisted-emails", label: "Whitelisted Emails" },
-  { href: "/admin/schema-check", label: "Schema Check" },
 ] as const;
 
 export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mt-6 space-y-0.5 overflow-y-auto max-h-[calc(100vh-12rem)]">
+    <nav className="mt-6 max-h-[calc(100vh-14rem)] space-y-1 overflow-y-auto pr-1">
       {navItems.map((item) => {
         const isActive =
           item.href === "/admin"
@@ -38,12 +37,17 @@ export function AdminNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
               isActive
-                ? "bg-zinc-100 text-zinc-900"
+                ? "bg-indigo-50 text-indigo-900 ring-1 ring-indigo-100"
                 : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
             }`}
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                isActive ? "bg-indigo-500" : "bg-zinc-300"
+              }`}
+            />
             {item.label}
           </Link>
         );

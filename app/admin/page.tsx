@@ -301,8 +301,11 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+      <div className="admin-card p-5">
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-indigo-600">
+          System Overview
+        </div>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">Dashboard</h1>
         <p className="mt-1 text-sm text-zinc-600">
           Admin control center with usage, quality, and moderation insights.
         </p>
@@ -313,10 +316,13 @@ export default async function AdminDashboardPage() {
           <Link
             key={s.label}
             href={s.href}
-            className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+            className="admin-card p-5 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
           >
-            <div className="text-sm font-medium text-zinc-600">{s.label}</div>
-            <div className="mt-2 text-2xl font-semibold tabular-nums">
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-600">
+              <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
+              {s.label}
+            </div>
+            <div className="mt-2 text-3xl font-semibold tabular-nums text-zinc-900">
               {s.error ? "—" : s.value}
             </div>
           </Link>
@@ -324,7 +330,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-1">
+        <div className="admin-card p-5 lg:col-span-1">
           <h2 className="text-sm font-semibold text-zinc-900">Upvotes vs Downvotes</h2>
           <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
             <div className="flex h-6 w-full">
@@ -346,7 +352,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="admin-card p-5 lg:col-span-2">
           <h2 className="text-sm font-semibold text-zinc-900">Public vs Private</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {[
@@ -383,8 +389,37 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
+      <div className="admin-card p-5">
+        <h2 className="admin-section-title">Needs Attention</h2>
+        <p className="mt-1 text-sm text-zinc-600">
+          Issues that can affect quality and moderation outcomes.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div className="text-xs font-semibold uppercase text-amber-700">Missing metadata</div>
+            <div className="mt-1 text-2xl font-semibold text-amber-900">{imagesMissingDescCount}</div>
+            <div className="text-xs text-amber-800">Images missing description/context</div>
+          </div>
+          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
+            <div className="text-xs font-semibold uppercase text-rose-700">No image link</div>
+            <div className="mt-1 text-2xl font-semibold text-rose-900">{captionsWithoutImageCount}</div>
+            <div className="text-xs text-rose-800">Captions without image_id</div>
+          </div>
+          <div className="rounded-lg border border-violet-200 bg-violet-50 p-3">
+            <div className="text-xs font-semibold uppercase text-violet-700">Downvote load</div>
+            <div className="mt-1 text-2xl font-semibold text-violet-900">{downvotes}</div>
+            <div className="text-xs text-violet-800">Negative vote events</div>
+          </div>
+          <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
+            <div className="text-xs font-semibold uppercase text-sky-700">Public content</div>
+            <div className="mt-1 text-2xl font-semibold text-sky-900">{captionsPublicCount}</div>
+            <div className="text-xs text-sky-800">Captions marked public</div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Captions Per Image</h2>
             <span className="text-xs text-zinc-500">Top 6</span>
@@ -411,7 +446,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <h2 className="text-sm font-semibold text-zinc-900">Quality Signals</h2>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-zinc-200 p-3">
@@ -434,8 +469,15 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
+      <div className="admin-card p-5">
+        <h2 className="admin-section-title">Recent Activity</h2>
+        <p className="mt-1 text-sm text-zinc-600">
+          Most recent moderation and content events across core tables.
+        </p>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Most Liked Captions</h2>
             <Link
@@ -466,7 +508,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Most Rated Captions</h2>
             <Link
@@ -497,7 +539,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Recently Uploaded Images</h2>
             <Link
@@ -525,7 +567,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900">Recent Caption Votes</h2>
             <Link
@@ -556,17 +598,7 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <p className="text-sm text-zinc-600">
-        <Link
-          href="/admin/schema-check"
-          className="font-medium text-zinc-900 underline hover:no-underline"
-        >
-          Schema check
-        </Link>
-        {" — test table access and discover column names for broken pages"}
-      </p>
-
-      <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="admin-card p-5">
         <h2 className="text-sm font-semibold text-zinc-900">Quick links</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {[

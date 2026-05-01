@@ -44,12 +44,12 @@ export function PaginationBar({
   const nextDisabled = rowCount < pageSize || safePage >= totalPages;
 
   const prevClass =
-    "rounded-lg border px-3 py-1.5 font-medium border-zinc-300 hover:bg-white";
+    "admin-btn-secondary px-3 py-1.5";
   const disabledClass =
-    "rounded-lg border px-3 py-1.5 font-medium pointer-events-none border-zinc-100 text-zinc-400";
+    "rounded-lg border px-3 py-1.5 font-medium pointer-events-none border-zinc-200 bg-zinc-100 text-zinc-400";
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+    <div className="admin-card flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-700">
       <div className="flex flex-col gap-0.5 tabular-nums sm:flex-row sm:items-baseline sm:gap-3">
         <span>
           Page <span className="font-medium text-zinc-900">{safePage}</span> of{" "}

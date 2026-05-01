@@ -69,14 +69,14 @@ export default async function AdminImagesPage({
           { label: "Common-use images", value: commonUseImages },
           { label: "Missing descriptions", value: missingDescription },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+          <div key={stat.label} className="admin-card p-4">
             <div className="text-xs uppercase tracking-wide text-zinc-500">{stat.label}</div>
             <div className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">{stat.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="admin-card p-5">
         <h2 className="text-sm font-semibold">Create image</h2>
         <div className="mt-3">
           <ImageCreateForm
@@ -94,18 +94,18 @@ export default async function AdminImagesPage({
         </p>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="admin-card p-4">
         <form className="flex flex-wrap gap-3" method="get">
           <input
             name="q"
             defaultValue={q}
             placeholder="Search url or description"
-            className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-input min-w-[260px]"
           />
           <select
             name="visibility"
             defaultValue={visibility}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-input"
           >
             <option value="all">All visibility</option>
             <option value="public">Public</option>
@@ -114,7 +114,7 @@ export default async function AdminImagesPage({
           <select
             name="usage"
             defaultValue={usage}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+            className="admin-input"
           >
             <option value="all">All usage</option>
             <option value="common">Common-use</option>
@@ -122,11 +122,48 @@ export default async function AdminImagesPage({
           </select>
           <button
             type="submit"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
+            className="admin-btn-secondary"
           >
             Apply
           </button>
         </form>
+      </div>
+
+      <div className="admin-card p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="admin-section-title">Image Gallery Preview</h2>
+          <span className="text-xs text-zinc-500">Latest {Math.min(rows.length, 12)} items</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {rows.slice(0, 12).map((row) => {
+            const rowUrl = String(row.url ?? "");
+            return (
+              <div key={`preview-${String(row.id)}`} className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                {rowUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={rowUrl}
+                    alt=""
+                    className="h-32 w-full rounded-lg object-cover ring-1 ring-zinc-200"
+                  />
+                ) : (
+                  <div className="h-32 w-full rounded-lg bg-zinc-100 ring-1 ring-zinc-200" />
+                )}
+                <div className="mt-2 space-y-1">
+                  <div className="truncate text-xs text-zinc-600">{rowUrl || "No URL"}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {supportsIsPublic ? (
+                      <span className="admin-badge">{row.is_public === true ? "Public" : "Private"}</span>
+                    ) : null}
+                    {supportsIsCommonUse ? (
+                      <span className="admin-badge">{row.is_common_use === true ? "Common Use" : "General"}</span>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <AdminTable

@@ -47,19 +47,19 @@ export function ImagesRow({
         )}
       </td>
       <td className="px-4 py-3">
-        <form action={formAction} className="flex items-center gap-2">
+        <form action={formAction} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="id" value={id} />
           <input
             name="url"
             defaultValue={url}
-            className="min-w-[200px] max-w-[min(100%,28rem)] rounded border border-zinc-300 px-2 py-1 text-sm"
+            className="admin-input min-w-[200px] max-w-[min(100%,28rem)]"
           />
           {supportsDescription ? (
             <input
               name="description"
               defaultValue={String(row.description ?? "")}
               placeholder="Description"
-              className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
+              className="admin-input min-w-[160px]"
             />
           ) : null}
           {supportsContext ? (
@@ -67,11 +67,11 @@ export function ImagesRow({
               name="context"
               defaultValue={String(row.context ?? "")}
               placeholder="Context"
-              className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
+              className="admin-input min-w-[160px]"
             />
           ) : null}
           {supportsIsPublic ? (
-            <label className="flex items-center gap-1.5 text-xs text-zinc-700">
+            <label className="admin-badge">
               <input
                 type="checkbox"
                 name="is_public"
@@ -83,7 +83,7 @@ export function ImagesRow({
             </label>
           ) : null}
           {supportsIsCommonUse ? (
-            <label className="flex items-center gap-1.5 text-xs text-zinc-700">
+            <label className="admin-badge">
               <input
                 type="checkbox"
                 name="is_common_use"
@@ -96,12 +96,12 @@ export function ImagesRow({
           ) : null}
           <button
             type="submit"
-            className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50"
+            className="admin-btn-secondary px-3 py-1 text-xs"
           >
             Save
           </button>
           {state?.error && <span className="text-xs text-red-600">{state.error}</span>}
-          {state?.success && <span className="text-xs text-emerald-600">Saved</span>}
+          {state?.success && <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Saved</span>}
         </form>
       </td>
       <td className="px-4 py-3 text-zinc-700">
