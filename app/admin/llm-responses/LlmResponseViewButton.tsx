@@ -9,7 +9,6 @@ export function LlmResponseViewButton({ row }: { row: Row }) {
   const response = String(row.llm_model_response ?? "");
   const systemPrompt = String(row.llm_system_prompt ?? "");
   const userPrompt = String(row.llm_user_prompt ?? "");
-  const hasLongContent = response.length > 80 || systemPrompt.length > 80 || userPrompt.length > 80;
 
   return (
     <>

@@ -24,13 +24,6 @@ function parsePage(raw: string | string[] | undefined): number {
   return Math.floor(n);
 }
 
-function getValue(row: Row, keys: string[]): unknown {
-  for (const k of keys) {
-    if (k in row) return row[k];
-  }
-  return undefined;
-}
-
 function toNumber(v: unknown): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string" && v.trim() !== "") {
