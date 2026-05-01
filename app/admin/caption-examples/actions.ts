@@ -51,13 +51,7 @@ export async function updateCaptionExample(formData: FormData) {
 
   const r = existing as Record<string, unknown>;
   let updates: Record<string, unknown> = {};
-  if (Object.prototype.hasOwnProperty.call(r, "caption")) {
-    updates.caption = exampleText;
-  } else if (Object.prototype.hasOwnProperty.call(r, "caption_text")) {
-    updates.caption_text = exampleText;
-  } else {
-    updates.caption = exampleText;
-  }
+  updates.caption = exampleText;
   if (Object.prototype.hasOwnProperty.call(r, "humor_flavor_id")) {
     updates.humor_flavor_id = humorFlavorId || null;
   }

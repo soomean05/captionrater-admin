@@ -24,9 +24,9 @@ export function LlmModelsRow({ row }: { row: Row }) {
             className="min-w-[140px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input
-            name="provider_id"
+            name="llm_provider_id"
             defaultValue={String(
-              row.provider_id ?? row.llm_provider_id ?? row.providerId ?? ""
+              row.llm_provider_id ?? row.provider_id ?? row.providerId ?? ""
             )}
             placeholder="Provider ID"
             className="min-w-[100px] rounded border border-zinc-300 px-2 py-1 text-sm"

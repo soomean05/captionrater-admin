@@ -6,53 +6,24 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/supabase/guards";
 import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 
-function isMissingColumnError(error: { message?: string; code?: string }): boolean {
-  const m = (error.message ?? "").toLowerCase();
-  return (
-    error.code === "PGRST204" ||
-    (m.includes("column") && (m.includes("schema cache") || m.includes("does not exist")))
-  );
-}
-
-async function insertLlmModelRow(
-  supabase: ReturnType<typeof createAdminClient>,
-  payload: {
-    name: string;
-    providerId: string | null;
-    audit?: Record<string, unknown>;
-  }
-): Promise<{ error: { message: string; code?: string } | null }> {
-  const base = { name: payload.name };
-  const tries: Record<string, unknown>[] = [
-    { ...base, provider_id: payload.providerId || null, ...(payload.audit ?? {}) },
-    { ...base, llm_provider_id: payload.providerId || null, ...(payload.audit ?? {}) },
-  ];
-  let last: { message: string; code?: string } | null = null;
-  for (const insert of tries) {
-    const { error } = await supabase.from("llm_models").insert(insert);
-    if (!error) return { error: null };
-    last = error;
-    if (isMissingColumnError(error)) continue;
-    return { error };
-  }
-  return { error: last };
-}
-
 export async function createLlmModel(formData: FormData): Promise<void> {
   const user = await requireSuperadmin();
   const name = String(formData.get("name") ?? "").trim();
-  const providerId = String(formData.get("provider_id") ?? "").trim();
+  const providerId = String(formData.get("llm_provider_id") ?? "").trim();
   if (!name) {
     redirect("/admin/llm-models?error=" + encodeURIComponent("Model name is required"));
   }
+  if (!providerId) {
+    redirect("/admin/llm-models?error=" + encodeURIComponent("Provider is required"));
+  }
 
   const supabase = createAdminClient();
-  const audit = await withAuditFields(supabase, "llm_models", {}, user.id, "create");
-  const { error } = await insertLlmModelRow(supabase, {
+  let payload: Record<string, unknown> = {
     name,
-    providerId: providerId || null,
-    audit,
-  });
+    llm_provider_id: providerId,
+  };
+  payload = await withAuditFields(supabase, "llm_models", payload, user.id, "create");
+  const { error } = await supabase.from("llm_models").insert(payload);
   if (error) {
     redirect("/admin/llm-models?error=" + encodeURIComponent(error.message));
   }
@@ -63,8 +34,9 @@ export async function updateLlmModel(formData: FormData) {
   const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
-  const providerId = String(formData.get("provider_id") ?? "").trim();
+  const providerId = String(formData.get("llm_provider_id") ?? "").trim();
   if (!id || !name) return { error: "ID and model name required" };
+  if (!providerId) return { error: "Provider is required" };
 
   const supabase = createAdminClient();
   const { data: existing, error: fetchErr } = await supabase
@@ -75,20 +47,10 @@ export async function updateLlmModel(formData: FormData) {
   if (fetchErr) return { error: fetchErr.message };
   if (!existing) return { error: "Row not found" };
 
-  const row = existing as Record<string, unknown>;
   let updates: Record<string, unknown> = {
     name,
+    llm_provider_id: providerId,
   };
-  const pid = providerId || null;
-  if (Object.prototype.hasOwnProperty.call(row, "llm_provider_id")) {
-    updates.llm_provider_id = pid;
-  }
-  if (Object.prototype.hasOwnProperty.call(row, "provider_id")) {
-    updates.provider_id = pid;
-  }
-  if (!("llm_provider_id" in updates) && !("provider_id" in updates)) {
-    updates.provider_id = pid;
-  }
 
   updates = await withAuditFields(supabase, "llm_models", updates, user.id, "update");
   updates = await withModifiedDatetime(supabase, "llm_models", updates);

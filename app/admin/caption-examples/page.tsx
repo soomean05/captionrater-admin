@@ -25,7 +25,7 @@ export default async function AdminCaptionExamplesPage({
   const allRows = (data ?? []) as Record<string, unknown>[];
   const rows = allRows.filter((row) => {
     if (!q) return true;
-    const text = String(row.caption ?? row.caption_text ?? "").toLowerCase();
+    const text = String(row.caption ?? "").toLowerCase();
     return text.includes(q);
   });
   const total = count ?? allRows.length;
