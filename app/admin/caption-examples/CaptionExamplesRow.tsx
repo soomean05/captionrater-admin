@@ -35,12 +35,6 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
             required
             className="min-w-[280px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
-          <input
-            name="humor_flavor_id"
-            defaultValue={String(row.humor_flavor_id ?? row.humorFlavorId ?? "")}
-            placeholder="Humor flavor ID (optional)"
-            className="min-w-[100px] rounded border border-zinc-300 px-2 py-1 text-sm"
-          />
           <button
             type="submit"
             className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50"
@@ -55,11 +49,7 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
           )}
         </form>
       </td>
-      <td className="px-4 py-3 text-zinc-700">
-        {row.humor_flavor_id ?? row.humorFlavorId
-          ? String(row.humor_flavor_id ?? row.humorFlavorId)
-          : "—"}
-      </td>
+      <td className="px-4 py-3 text-zinc-700">—</td>
       <td className="px-4 py-3 text-zinc-700 whitespace-nowrap">
         {row.created_datetime_utc
           ? new Date(row.created_datetime_utc as string).toLocaleString()

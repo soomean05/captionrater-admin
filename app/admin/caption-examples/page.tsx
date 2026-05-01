@@ -74,7 +74,7 @@ export default async function AdminCaptionExamplesPage({
           <tr>
             <th className="px-4 py-3">ID</th>
             <th className="px-4 py-3">Caption text</th>
-            <th className="px-4 py-3">Humor flavor ID</th>
+            <th className="px-4 py-3">Flavor Link</th>
             <th className="px-4 py-3">Created</th>
             <th className="px-4 py-3">Modified</th>
             <th className="px-4 py-3 text-right">Actions</th>

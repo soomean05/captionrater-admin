@@ -10,14 +10,10 @@ export async function insertCaptionExampleRow(
   payload: Record<string, unknown> & {
     text: string;
     image_description: string;
-    humor_flavor_id: string | null;
   }
 ): Promise<{ error: { message: string; code?: string } | null }> {
   const base: Record<string, unknown> = { ...payload };
   delete base.text;
-  if ("humor_flavor_id" in base && payload.humor_flavor_id == null) {
-    delete base.humor_flavor_id;
-  }
   const insert = {
     ...base,
     caption: payload.text,
