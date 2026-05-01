@@ -10,6 +10,7 @@ export async function insertCaptionExampleRow(
   payload: Record<string, unknown> & {
     text: string;
     image_description: string;
+    explanation: string;
   }
 ): Promise<{ error: { message: string; code?: string } | null }> {
   const base: Record<string, unknown> = { ...payload };
@@ -18,6 +19,7 @@ export async function insertCaptionExampleRow(
     ...base,
     caption: payload.text,
     image_description: payload.image_description,
+    explanation: payload.explanation,
   };
   const { error } = await supabase.from("caption_examples").insert(insert);
   if (!error) return { error: null };

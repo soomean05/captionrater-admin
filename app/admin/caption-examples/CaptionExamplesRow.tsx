@@ -35,6 +35,13 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
             required
             className="min-w-[280px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
+          <textarea
+            name="explanation"
+            defaultValue={String(row.explanation ?? "")}
+            placeholder="Explanation"
+            required
+            className="min-w-[280px] rounded border border-zinc-300 px-2 py-1 text-sm"
+          />
           <button
             type="submit"
             className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50"
