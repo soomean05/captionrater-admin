@@ -25,7 +25,15 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
             name="caption"
             defaultValue={getCaptionExampleTextFromRow(row)}
             placeholder="Caption text"
+            required
             className="min-w-[200px] rounded border border-zinc-300 px-2 py-1 text-sm"
+          />
+          <textarea
+            name="image_description"
+            defaultValue={String(row.image_description ?? "")}
+            placeholder="Image description"
+            required
+            className="min-w-[280px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input
             name="humor_flavor_id"

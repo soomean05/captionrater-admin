@@ -10,14 +10,19 @@ export async function createTerm(formData: FormData): Promise<void> {
   const user = await requireSuperadmin();
   const term = String(formData.get("term") ?? "").trim();
   const definition = String(formData.get("definition") ?? "").trim();
+  const example = String(formData.get("example") ?? "").trim();
   if (!term) {
     redirect("/admin/terms?error=" + encodeURIComponent("Term is required"));
+  }
+  if (!example) {
+    redirect("/admin/terms?error=" + encodeURIComponent("Example is required"));
   }
 
   const supabase = createAdminClient();
   let payload: Record<string, unknown> = {
     term,
     definition: definition || null,
+    example,
   };
   payload = await withAuditFields(supabase, "terms", payload, user.id, "create");
 
@@ -33,12 +38,15 @@ export async function updateTerm(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim();
   const term = String(formData.get("term") ?? "").trim();
   const definition = String(formData.get("definition") ?? "").trim();
+  const example = String(formData.get("example") ?? "").trim();
   if (!id || !term) return { error: "ID and term required" };
+  if (!example) return { error: "Example is required" };
 
   const supabase = createAdminClient();
   let updates: Record<string, unknown> = {
     term,
     definition: definition || null,
+    example,
   };
   updates = await withAuditFields(supabase, "terms", updates, user.id, "update");
   updates = await withModifiedDatetime(supabase, "terms", updates);

@@ -22,6 +22,7 @@ export function TermsRow({ row }: { row: Row }) {
             name="term"
             defaultValue={String(row.term ?? row.name ?? row.text ?? "")}
             placeholder="Term"
+            required
             className="min-w-[120px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input
@@ -29,6 +30,13 @@ export function TermsRow({ row }: { row: Row }) {
             defaultValue={String(row.definition ?? "")}
             placeholder="Definition"
             className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
+          />
+          <textarea
+            name="example"
+            defaultValue={String(row.example ?? "")}
+            placeholder="Example"
+            required
+            className="min-w-[220px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <button type="submit" className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50">
             Save

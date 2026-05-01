@@ -14,6 +14,7 @@ export function CreateLlmModelForm({
   providers: Provider[];
 }) {
   const [providerId, setProviderId] = useState("");
+  const [providerModelId, setProviderModelId] = useState("");
   const hasProviders = providers.length > 0;
 
   return (
@@ -39,9 +40,17 @@ export function CreateLlmModelForm({
           </option>
         ))}
       </select>
+      <input
+        name="provider_model_id"
+        required
+        value={providerModelId}
+        onChange={(e) => setProviderModelId(e.target.value)}
+        placeholder="Provider Model ID (e.g. gpt-4o-mini)"
+        className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+      />
       <button
         type="submit"
-        disabled={!hasProviders || !providerId}
+        disabled={!hasProviders || !providerId || !providerModelId.trim()}
         className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white enabled:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         Create

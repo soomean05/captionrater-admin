@@ -3,7 +3,7 @@ import { AdminTable } from "@/components/admin/AdminTable";
 import { PaginationBar } from "@/components/admin/PaginationBar";
 import { getAdminListPagination } from "@/lib/admin/pagination";
 import { listTablePaginated } from "@/lib/admin/queries";
-import { createTerm } from "./actions";
+import { CreateTermForm } from "./CreateTermForm";
 import { TermsRow } from "./TermsRow";
 
 export default async function AdminTermsPage({
@@ -32,25 +32,7 @@ export default async function AdminTermsPage({
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create term</h2>
-        <form action={createTerm} className="mt-3 flex flex-wrap gap-3">
-          <input
-            name="term"
-            placeholder="Term / name"
-            required
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="definition"
-            placeholder="Definition"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-          >
-            Create
-          </button>
-        </form>
+        <CreateTermForm />
       </div>
 
       {paramError && (

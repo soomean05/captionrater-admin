@@ -3,7 +3,7 @@ import { AdminTable } from "@/components/admin/AdminTable";
 import { PaginationBar } from "@/components/admin/PaginationBar";
 import { getAdminListPagination } from "@/lib/admin/pagination";
 import { listTablePaginated } from "@/lib/admin/queries";
-import { createCaptionExample } from "./actions";
+import { CreateCaptionExampleForm } from "./CreateCaptionExampleForm";
 import { CaptionExamplesRow } from "./CaptionExamplesRow";
 
 export default async function AdminCaptionExamplesPage({
@@ -39,25 +39,7 @@ export default async function AdminCaptionExamplesPage({
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold">Create caption example</h2>
-        <form action={createCaptionExample} className="mt-3 flex flex-wrap gap-3">
-          <input
-            name="caption"
-            placeholder="Caption text"
-            required
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="humor_flavor_id"
-            placeholder="Humor flavor ID (optional)"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-          >
-            Create
-          </button>
-        </form>
+        <CreateCaptionExampleForm />
       </div>
 
       {paramError && (

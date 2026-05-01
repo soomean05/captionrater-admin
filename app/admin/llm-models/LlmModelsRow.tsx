@@ -21,6 +21,7 @@ export function LlmModelsRow({ row }: { row: Row }) {
             name="name"
             defaultValue={String(row.name ?? row.model_name ?? "")}
             placeholder="Model name"
+            required
             className="min-w-[140px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input
@@ -29,7 +30,15 @@ export function LlmModelsRow({ row }: { row: Row }) {
               row.llm_provider_id ?? row.provider_id ?? row.providerId ?? ""
             )}
             placeholder="Provider ID"
+            required
             className="min-w-[100px] rounded border border-zinc-300 px-2 py-1 text-sm"
+          />
+          <input
+            name="provider_model_id"
+            defaultValue={String(row.provider_model_id ?? "")}
+            placeholder="Provider Model ID"
+            required
+            className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <button
             type="submit"
