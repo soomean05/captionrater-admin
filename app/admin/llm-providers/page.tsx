@@ -37,26 +37,6 @@ export default async function AdminLlmProvidersPage({
             required
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
-          <input
-            name="base_url"
-            placeholder="Base URL (optional)"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="api_type"
-            placeholder="API type (optional)"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="is_active"
-              defaultChecked
-              value="true"
-              className="rounded border-zinc-300"
-            />
-            Active
-          </label>
           <button
             type="submit"
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
@@ -80,7 +60,7 @@ export default async function AdminLlmProvidersPage({
         headers={
           <tr>
             <th className="px-4 py-3" colSpan={3}>
-              Name / Base URL / API type / Active
+              Name
             </th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
