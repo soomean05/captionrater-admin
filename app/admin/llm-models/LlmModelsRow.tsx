@@ -12,11 +12,9 @@ export function LlmModelsRow({ row }: { row: Row }) {
     null as { error?: string; success?: boolean } | null
   );
 
-  const isActive = row.is_active === true || row.is_active === "true" || row.isActive === true;
-
   return (
     <tr className="border-b border-zinc-100 last:border-0">
-      <td className="px-4 py-3" colSpan={3}>
+      <td className="px-4 py-3" colSpan={2}>
         <form action={formAction} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="id" value={String(row.id)} />
           <input
@@ -33,16 +31,6 @@ export function LlmModelsRow({ row }: { row: Row }) {
             placeholder="Provider ID"
             className="min-w-[100px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
-          <label className="flex items-center gap-1.5 text-sm">
-            <input
-              type="checkbox"
-              name="is_active"
-              defaultChecked={!!isActive}
-              value="true"
-              className="rounded border-zinc-300"
-            />
-            Active
-          </label>
           <button
             type="submit"
             className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50"

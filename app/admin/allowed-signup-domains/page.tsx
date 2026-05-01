@@ -15,7 +15,6 @@ export default async function AdminAllowedSignupDomainsPage({
   const { page, pageSize, preserve } = getAdminListPagination(sp);
   const paramError = typeof sp.error === "string" ? sp.error : undefined;
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
-  const active = typeof sp.active === "string" ? sp.active : "all";
 
   const { data, error, count } = await listTablePaginated(
     "allowed_signup_domains",
@@ -24,14 +23,8 @@ export default async function AdminAllowedSignupDomainsPage({
   );
   const allRows = (data ?? []) as Record<string, unknown>[];
   const rows = allRows.filter((row) => {
-    const domain = String(row.domain ?? "").toLowerCase();
-    const isActive = row.is_active === true || row.is_enabled === true;
-    const matchesQ = q ? domain.includes(q) : true;
-    const matchesActive =
-      active === "all" ||
-      (active === "yes" && isActive) ||
-      (active === "no" && !isActive);
-    return matchesQ && matchesActive;
+    const apexDomain = String(row.apex_domain ?? "").toLowerCase();
+    return q ? apexDomain.includes(q) : true;
   });
   const total = count ?? allRows.length;
 
@@ -46,21 +39,11 @@ export default async function AdminAllowedSignupDomainsPage({
         <h2 className="text-sm font-semibold">Create allowed signup domain</h2>
         <form action={createAllowedSignupDomain} className="mt-3 flex flex-wrap gap-3">
           <input
-            name="domain"
-            placeholder="Domain (e.g. example.com)"
+            name="apex_domain"
+            placeholder="Apex domain (e.g. example.com)"
             required
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm lowercase"
           />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="is_active"
-              defaultChecked
-              value="true"
-              className="rounded border-zinc-300"
-            />
-            Active
-          </label>
           <button
             type="submit"
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
@@ -81,18 +64,9 @@ export default async function AdminAllowedSignupDomainsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search domain"
+            placeholder="Search apex domain"
             className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
-          <select
-            name="active"
-            defaultValue={active}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="all">All active states</option>
-            <option value="yes">Active</option>
-            <option value="no">Inactive</option>
-          </select>
           <button
             type="submit"
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
@@ -106,20 +80,19 @@ export default async function AdminAllowedSignupDomainsPage({
         error={error?.message}
         empty={rows.length === 0}
         emptyMessage="No allowed signup domains found."
-        colSpan={4}
+        colSpan={3}
         headers={
           <tr>
             <th className="px-4 py-3" colSpan={2}>
-              Domain
+              Apex domain
             </th>
-            <th className="px-4 py-3">Active</th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         }
       >
         {rows.map((row) => (
           <AllowedSignupDomainsRow
-            key={String(row.id ?? row.domain)}
+            key={String(row.id ?? row.apex_domain)}
             row={row}
           />
         ))}

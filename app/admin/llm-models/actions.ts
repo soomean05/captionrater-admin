@@ -19,11 +19,10 @@ async function insertLlmModelRow(
   payload: {
     name: string;
     providerId: string | null;
-    isActive: boolean;
     audit?: Record<string, unknown>;
   }
 ): Promise<{ error: { message: string; code?: string } | null }> {
-  const base = { name: payload.name, is_active: payload.isActive };
+  const base = { name: payload.name };
   const tries: Record<string, unknown>[] = [
     { ...base, provider_id: payload.providerId || null, ...(payload.audit ?? {}) },
     { ...base, llm_provider_id: payload.providerId || null, ...(payload.audit ?? {}) },
@@ -43,7 +42,6 @@ export async function createLlmModel(formData: FormData): Promise<void> {
   const user = await requireSuperadmin();
   const name = String(formData.get("name") ?? "").trim();
   const providerId = String(formData.get("provider_id") ?? "").trim();
-  const isActive = formData.get("is_active") === "true" || formData.get("is_active") === "on";
   if (!name) {
     redirect("/admin/llm-models?error=" + encodeURIComponent("Model name is required"));
   }
@@ -53,7 +51,6 @@ export async function createLlmModel(formData: FormData): Promise<void> {
   const { error } = await insertLlmModelRow(supabase, {
     name,
     providerId: providerId || null,
-    isActive,
     audit,
   });
   if (error) {
@@ -67,7 +64,6 @@ export async function updateLlmModel(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   const providerId = String(formData.get("provider_id") ?? "").trim();
-  const isActive = formData.get("is_active") === "true" || formData.get("is_active") === "on";
   if (!id || !name) return { error: "ID and model name required" };
 
   const supabase = createAdminClient();
@@ -82,7 +78,6 @@ export async function updateLlmModel(formData: FormData) {
   const row = existing as Record<string, unknown>;
   let updates: Record<string, unknown> = {
     name,
-    is_active: isActive,
   };
   const pid = providerId || null;
   if (Object.prototype.hasOwnProperty.call(row, "llm_provider_id")) {

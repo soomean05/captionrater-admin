@@ -9,11 +9,11 @@ import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 
 export async function createCaptionExample(formData: FormData): Promise<void> {
   const user = await requireSuperadmin();
-  const exampleText = String(formData.get("example_text") ?? "").trim();
+  const exampleText = String(formData.get("caption") ?? "").trim();
   const humorFlavorId = String(formData.get("humor_flavor_id") ?? "").trim();
   if (!exampleText) {
     redirect(
-      "/admin/caption-examples?error=" + encodeURIComponent("Example text is required")
+      "/admin/caption-examples?error=" + encodeURIComponent("Caption text is required")
     );
   }
 
@@ -36,9 +36,9 @@ export async function createCaptionExample(formData: FormData): Promise<void> {
 export async function updateCaptionExample(formData: FormData) {
   const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
-  const exampleText = String(formData.get("example_text") ?? "").trim();
+  const exampleText = String(formData.get("caption") ?? "").trim();
   const humorFlavorId = String(formData.get("humor_flavor_id") ?? "").trim();
-  if (!id || !exampleText) return { error: "ID and example text required" };
+  if (!id || !exampleText) return { error: "ID and caption text required" };
 
   const supabase = createAdminClient();
   const { data: existing, error: fetchErr } = await supabase
@@ -50,17 +50,16 @@ export async function updateCaptionExample(formData: FormData) {
   if (!existing) return { error: "Row not found" };
 
   const r = existing as Record<string, unknown>;
-  let updates: Record<string, unknown> = {
-    humor_flavor_id: humorFlavorId || null,
-  };
-  if (Object.prototype.hasOwnProperty.call(r, "caption_text")) {
+  let updates: Record<string, unknown> = {};
+  if (Object.prototype.hasOwnProperty.call(r, "caption")) {
+    updates.caption = exampleText;
+  } else if (Object.prototype.hasOwnProperty.call(r, "caption_text")) {
     updates.caption_text = exampleText;
+  } else {
+    updates.caption = exampleText;
   }
-  if (Object.prototype.hasOwnProperty.call(r, "example_text")) {
-    updates.example_text = exampleText;
-  }
-  if (!("caption_text" in updates) && !("example_text" in updates)) {
-    updates.caption_text = exampleText;
+  if (Object.prototype.hasOwnProperty.call(r, "humor_flavor_id")) {
+    updates.humor_flavor_id = humorFlavorId || null;
   }
 
   updates = await withAuditFields(supabase, "caption_examples", updates, user.id, "update");

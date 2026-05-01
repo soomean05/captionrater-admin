@@ -29,7 +29,7 @@ export default async function AdminWhitelistedEmailsPage({
   const allRows = (data ?? []) as Record<string, unknown>[];
   const rows = allRows.filter((row) => {
     if (!q) return true;
-    const email = String(row.email ?? row.email_address ?? row.whitelisted_email ?? "").toLowerCase();
+    const email = String(row.email_address ?? row.email ?? "").toLowerCase();
     const notes = String(row.notes ?? "").toLowerCase();
     return email.includes(q) || notes.includes(q);
   });
@@ -39,7 +39,7 @@ export default async function AdminWhitelistedEmailsPage({
     <div className="space-y-6">
       <AdminPageHeader
         title="Whitelisted Emails"
-        subtitle="Full CRUD for the email whitelist table (name may be whitelisted_emails or similar)."
+        subtitle="Full CRUD for whitelist_email_addresses table."
       />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">

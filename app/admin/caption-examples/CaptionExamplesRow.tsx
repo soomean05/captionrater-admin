@@ -22,9 +22,9 @@ export function CaptionExamplesRow({ row }: { row: Row }) {
         <form action={formAction} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="id" value={String(row.id)} />
           <input
-            name="example_text"
+            name="caption"
             defaultValue={getCaptionExampleTextFromRow(row)}
-            placeholder="Example text"
+            placeholder="Caption text"
             className="min-w-[200px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input

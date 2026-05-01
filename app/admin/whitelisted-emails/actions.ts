@@ -27,10 +27,11 @@ export async function createWhitelistedEmail(formData: FormData): Promise<void> 
   const { error } = await tryWhitelistTables(async (table) => {
     const base = await withAuditFields(supabase, table, {}, user.id, "create");
     const variants: Record<string, unknown>[] = [
-      { ...base, email, notes: n },
-      { ...base, email_address: email, notes: n },
-      { ...base, whitelisted_email: email, notes: n },
+      { ...base, email_address: email },
     ];
+    if (n) {
+      for (const v of variants) v.notes = n;
+    }
     let last: { message: string; code?: string } | null = null;
     for (const insert of variants) {
       const { error: insertErr } = await supabase.from(table).insert(insert);
@@ -62,10 +63,11 @@ export async function updateWhitelistedEmail(formData: FormData) {
     let base = await withAuditFields(supabase, table, {}, user.id, "update");
     base = await withModifiedDatetime(supabase, table, base);
     const variants: Record<string, unknown>[] = [
-      { ...base, email, notes: n },
-      { ...base, email_address: email, notes: n },
-      { ...base, whitelisted_email: email, notes: n },
+      { ...base, email_address: email },
     ];
+    if (n) {
+      for (const v of variants) v.notes = n;
+    }
 
     let last: { message: string; code?: string } | null = null;
     for (const updates of variants) {
@@ -73,13 +75,7 @@ export async function updateWhitelistedEmail(formData: FormData) {
       if (!r.error) return { error: null };
       last = r.error;
 
-      r = await supabase.from(table).update(updates).eq("email", id);
-      if (!r.error) return { error: null };
-
       r = await supabase.from(table).update(updates).eq("email_address", id);
-      if (!r.error) return { error: null };
-
-      r = await supabase.from(table).update(updates).eq("whitelisted_email", id);
       if (!r.error) return { error: null };
     }
     return { error: last };
@@ -100,13 +96,9 @@ export async function deleteWhitelistedEmail(formData: FormData) {
     let r = await supabase.from(table).delete().eq("id", id);
     if (!r.error) return { error: null };
 
-    r = await supabase.from(table).delete().eq("email", id);
-    if (!r.error) return { error: null };
-
     r = await supabase.from(table).delete().eq("email_address", id);
     if (!r.error) return { error: null };
-
-    return supabase.from(table).delete().eq("whitelisted_email", id);
+    return { error: r.error };
   });
 
   if (error) return { error: formatSupabaseError(error) ?? error.message };

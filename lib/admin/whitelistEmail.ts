@@ -2,8 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** Try in this order so the real table is found first. */
 export const WHITELIST_TABLE_CANDIDATES = [
-  "whitelisted_emails",
-  "whitelisted_email_addresses",
   "whitelist_email_addresses",
 ] as const;
 
@@ -16,7 +14,7 @@ function isMissingColumnError(error: { message?: string; code?: string }): boole
 }
 
 export function getWhitelistEmailFromRow(row: Record<string, unknown>): string {
-  const v = row.email ?? row.email_address ?? row.whitelisted_email ?? row.address;
+  const v = row.email_address ?? row.email ?? row.address;
   return v != null ? String(v) : "";
 }
 
@@ -47,11 +45,8 @@ export async function insertWhitelistedEmailRow(
   notes: string | null,
   extra: Record<string, unknown> = {}
 ): Promise<{ error: { message: string; code?: string } | null }> {
-  const n = notes || null;
   const payloads: Record<string, unknown>[] = [
-    { email, notes: n, ...extra },
-    { email_address: email, notes: n, ...extra },
-    { whitelisted_email: email, notes: n, ...extra },
+    { email_address: email, ...extra },
   ];
 
   return tryWhitelistTables(async (table) => {

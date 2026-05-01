@@ -25,9 +25,9 @@ export function TermsRow({ row }: { row: Row }) {
             className="min-w-[120px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <input
-            name="description"
-            defaultValue={String(row.description ?? "")}
-            placeholder="Description"
+            name="definition"
+            defaultValue={String(row.definition ?? "")}
+            placeholder="Definition"
             className="min-w-[160px] rounded border border-zinc-300 px-2 py-1 text-sm"
           />
           <button type="submit" className="rounded border border-zinc-300 px-3 py-1 text-xs hover:bg-zinc-50">

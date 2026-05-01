@@ -25,7 +25,7 @@ export default async function AdminCaptionExamplesPage({
   const allRows = (data ?? []) as Record<string, unknown>[];
   const rows = allRows.filter((row) => {
     if (!q) return true;
-    const text = String(row.caption_text ?? row.example_text ?? "").toLowerCase();
+    const text = String(row.caption ?? row.caption_text ?? "").toLowerCase();
     return text.includes(q);
   });
   const total = count ?? allRows.length;
@@ -41,8 +41,8 @@ export default async function AdminCaptionExamplesPage({
         <h2 className="text-sm font-semibold">Create caption example</h2>
         <form action={createCaptionExample} className="mt-3 flex flex-wrap gap-3">
           <input
-            name="example_text"
-            placeholder="Example text"
+            name="caption"
+            placeholder="Caption text"
             required
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
@@ -71,7 +71,7 @@ export default async function AdminCaptionExamplesPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search example text"
+            placeholder="Search caption text"
             className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
           <button
@@ -91,7 +91,7 @@ export default async function AdminCaptionExamplesPage({
         headers={
           <tr>
             <th className="px-4 py-3">ID</th>
-            <th className="px-4 py-3">Example text</th>
+            <th className="px-4 py-3">Caption text</th>
             <th className="px-4 py-3">Humor flavor ID</th>
             <th className="px-4 py-3">Created</th>
             <th className="px-4 py-3">Modified</th>

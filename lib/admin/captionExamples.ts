@@ -1,11 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export function getCaptionExampleTextFromRow(row: Record<string, unknown>): string {
-  const v =
-    row.caption_text ??
-    row.example_text ??
-    row.exampleText ??
-    row.captionText;
+  const v = row.caption ?? row.caption_text ?? row.captionText;
   return v != null ? String(v) : "";
 }
 
@@ -27,8 +23,8 @@ export async function insertCaptionExampleRow(
   if (payload.humor_flavor_id) base.humor_flavor_id = payload.humor_flavor_id;
 
   const tries: Record<string, unknown>[] = [
+    { ...base, caption: payload.text },
     { ...base, caption_text: payload.text },
-    { ...base, example_text: payload.text },
   ];
 
   let lastErr: { message: string; code?: string } | null = null;

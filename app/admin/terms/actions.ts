@@ -9,7 +9,7 @@ import { withAuditFields, withModifiedDatetime } from "@/lib/admin/schema";
 export async function createTerm(formData: FormData): Promise<void> {
   const user = await requireSuperadmin();
   const term = String(formData.get("term") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
+  const definition = String(formData.get("definition") ?? "").trim();
   if (!term) {
     redirect("/admin/terms?error=" + encodeURIComponent("Term is required"));
   }
@@ -17,7 +17,7 @@ export async function createTerm(formData: FormData): Promise<void> {
   const supabase = createAdminClient();
   let payload: Record<string, unknown> = {
     term,
-    description: description || null,
+    definition: definition || null,
   };
   payload = await withAuditFields(supabase, "terms", payload, user.id, "create");
 
@@ -32,13 +32,13 @@ export async function updateTerm(formData: FormData) {
   const user = await requireSuperadmin();
   const id = String(formData.get("id") ?? "").trim();
   const term = String(formData.get("term") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
+  const definition = String(formData.get("definition") ?? "").trim();
   if (!id || !term) return { error: "ID and term required" };
 
   const supabase = createAdminClient();
   let updates: Record<string, unknown> = {
     term,
-    description: description || null,
+    definition: definition || null,
   };
   updates = await withAuditFields(supabase, "terms", updates, user.id, "update");
   updates = await withModifiedDatetime(supabase, "terms", updates);

@@ -15,7 +15,6 @@ export default async function AdminLlmModelsPage({
   const { page, pageSize, preserve } = getAdminListPagination(sp);
   const paramError = typeof sp.error === "string" ? sp.error : undefined;
   const q = typeof sp.q === "string" ? sp.q.trim().toLowerCase() : "";
-  const active = typeof sp.active === "string" ? sp.active : "all";
 
   const { data, error, count } = await listTablePaginated(
     "llm_models",
@@ -28,11 +27,7 @@ export default async function AdminLlmModelsPage({
     const name = String(row.name ?? row.model_name ?? "").toLowerCase();
     const provider = String(row.provider_id ?? row.llm_provider_id ?? "").toLowerCase();
     const matchesQ = q ? name.includes(q) || provider.includes(q) : true;
-    const matchesActive =
-      active === "all" ||
-      (active === "yes" && row.is_active === true) ||
-      (active === "no" && row.is_active !== true);
-    return matchesQ && matchesActive;
+    return matchesQ;
   });
   const total = count ?? allRows.length;
 
@@ -54,16 +49,6 @@ export default async function AdminLlmModelsPage({
             placeholder="Provider ID (optional)"
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="is_active"
-              defaultChecked
-              value="true"
-              className="rounded border-zinc-300"
-            />
-            Active
-          </label>
           <button
             type="submit"
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
@@ -87,15 +72,6 @@ export default async function AdminLlmModelsPage({
             placeholder="Search model or provider id"
             className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
-          <select
-            name="active"
-            defaultValue={active}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="all">All active states</option>
-            <option value="yes">Active</option>
-            <option value="no">Inactive</option>
-          </select>
           <button
             type="submit"
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
@@ -109,12 +85,11 @@ export default async function AdminLlmModelsPage({
         error={error?.message}
         empty={rows.length === 0}
         emptyMessage="No LLM models found."
-        colSpan={6}
+        colSpan={5}
         headers={
           <tr>
             <th className="px-4 py-3">Model name</th>
             <th className="px-4 py-3">Provider ID</th>
-            <th className="px-4 py-3">Active</th>
             <th className="px-4 py-3">Created</th>
             <th className="px-4 py-3">Modified</th>
             <th className="px-4 py-3 text-right">Actions</th>

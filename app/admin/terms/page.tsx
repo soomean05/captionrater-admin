@@ -21,8 +21,8 @@ export default async function AdminTermsPage({
   const rows = allRows.filter((row) => {
     if (!q) return true;
     const termText = String(row.term ?? row.name ?? "").toLowerCase();
-    const desc = String(row.description ?? "").toLowerCase();
-    return termText.includes(q) || desc.includes(q);
+    const definition = String(row.definition ?? "").toLowerCase();
+    return termText.includes(q) || definition.includes(q);
   });
   const total = count ?? allRows.length;
 
@@ -40,8 +40,8 @@ export default async function AdminTermsPage({
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
           <input
-            name="description"
-            placeholder="Description"
+            name="definition"
+            placeholder="Definition"
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
           <button
@@ -64,7 +64,7 @@ export default async function AdminTermsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search term or description"
+            placeholder="Search term or definition"
             className="min-w-[260px] rounded-lg border border-zinc-300 px-3 py-2 text-sm"
           />
           <button
@@ -84,7 +84,7 @@ export default async function AdminTermsPage({
         headers={
           <tr>
             <th className="px-4 py-3">Term</th>
-            <th className="px-4 py-3">Description</th>
+            <th className="px-4 py-3">Definition</th>
             <th className="px-4 py-3">Created</th>
             <th className="px-4 py-3">Modified</th>
             <th className="px-4 py-3 text-right">Actions</th>
