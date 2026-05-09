@@ -99,6 +99,7 @@ export default async function AdminCaptionRatingStatsPage({
     "captions_id",
   ] as const).find((k) => k in sample);
   const scoreColumn = ([
+    "vote_value",
     "vote_score",
     "score",
     "value",
@@ -136,6 +137,12 @@ export default async function AdminCaptionRatingStatsPage({
   let totalDownvotes = 0;
   let totalScore = 0;
   let countedScoreVotes = 0;
+  const uniqueRaters = new Set<string>();
+  const raterIdColumn = ([
+    "profile_id",
+    "user_id",
+    "rater_profile_id",
+  ] as const).find((k) => k in sample);
 
   for (const row of votes) {
     const captionId = String(row[captionIdColumn] ?? "").trim();
@@ -147,6 +154,10 @@ export default async function AdminCaptionRatingStatsPage({
       upvoteColumn,
       downvoteColumn
     );
+    if (raterIdColumn) {
+      const rater = String(row[raterIdColumn] ?? "").trim();
+      if (rater) uniqueRaters.add(rater);
+    }
 
     let bucket = byCaption.get(captionId);
     if (!bucket) {
@@ -245,13 +256,14 @@ export default async function AdminCaptionRatingStatsPage({
         subtitle="Statistics from caption_votes with caption/image metadata."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         {[
           { label: "Total captions", value: byCaption.size },
           { label: "Total votes", value: votes.length },
           { label: "Total upvotes", value: totalUpvotes },
           { label: "Total downvotes", value: totalDownvotes },
           { label: "Average vote score", value: averageVoteScore.toFixed(3) },
+          { label: "Unique users who rated", value: uniqueRaters.size },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -288,13 +300,14 @@ export default async function AdminCaptionRatingStatsPage({
         <h2 className="text-sm font-semibold text-zinc-900">Top-Rated Captions</h2>
         <AdminTable
           empty={topPageRows.length === 0}
-          emptyMessage="No rated captions found."
-          colSpan={7}
+          emptyMessage="No caption rating data available yet."
+          colSpan={8}
           headers={
             <tr>
               <th className="px-4 py-3">Caption ID</th>
               <th className="px-4 py-3">Caption Content</th>
               <th className="px-4 py-3">Image URL</th>
+              <th className="px-4 py-3">Net Score</th>
               <th className="px-4 py-3">Avg Score</th>
               <th className="px-4 py-3">Votes</th>
               <th className="px-4 py-3">Upvotes</th>
@@ -313,6 +326,7 @@ export default async function AdminCaptionRatingStatsPage({
                 <td className="px-4 py-3 font-mono text-xs text-zinc-700">{row.captionId}</td>
                 <td className="max-w-xl truncate px-4 py-3 text-zinc-900">{content}</td>
                 <td className="max-w-sm truncate px-4 py-3 text-zinc-700">{imageUrl}</td>
+                <td className="px-4 py-3 tabular-nums text-zinc-900">{row.scoreSum}</td>
                 <td className="px-4 py-3 tabular-nums text-zinc-700">{row.avgScore.toFixed(3)}</td>
                 <td className="px-4 py-3 tabular-nums text-zinc-700">{row.voteCount}</td>
                 <td className="px-4 py-3 tabular-nums text-emerald-700">{row.upvotes}</td>
@@ -335,13 +349,14 @@ export default async function AdminCaptionRatingStatsPage({
         <h2 className="text-sm font-semibold text-zinc-900">Most-Rated Captions</h2>
         <AdminTable
           empty={mostPageRows.length === 0}
-          emptyMessage="No rated captions found."
-          colSpan={7}
+          emptyMessage="No caption rating data available yet."
+          colSpan={8}
           headers={
             <tr>
               <th className="px-4 py-3">Caption ID</th>
               <th className="px-4 py-3">Caption Content</th>
               <th className="px-4 py-3">Image URL</th>
+              <th className="px-4 py-3">Net Score</th>
               <th className="px-4 py-3">Votes</th>
               <th className="px-4 py-3">Avg Score</th>
               <th className="px-4 py-3">Upvotes</th>
@@ -360,6 +375,7 @@ export default async function AdminCaptionRatingStatsPage({
                 <td className="px-4 py-3 font-mono text-xs text-zinc-700">{row.captionId}</td>
                 <td className="max-w-xl truncate px-4 py-3 text-zinc-900">{content}</td>
                 <td className="max-w-sm truncate px-4 py-3 text-zinc-700">{imageUrl}</td>
+                <td className="px-4 py-3 tabular-nums text-zinc-900">{row.scoreSum}</td>
                 <td className="px-4 py-3 tabular-nums text-zinc-700">{row.voteCount}</td>
                 <td className="px-4 py-3 tabular-nums text-zinc-700">{row.avgScore.toFixed(3)}</td>
                 <td className="px-4 py-3 tabular-nums text-emerald-700">{row.upvotes}</td>

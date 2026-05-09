@@ -71,7 +71,7 @@ export default async function AdminDashboardPage() {
 
   const votes = (votesResult.data ?? []) as Record<string, unknown>[];
   const voteSample = votes[0] ?? {};
-  const scoreColumn = (["vote_score", "score", "value", "rating", "vote"] as const).find(
+  const scoreColumn = (["vote_value", "vote_score", "score", "value", "rating", "vote"] as const).find(
     (k) => k in voteSample
   );
   const upvoteColumn = (["is_upvote", "upvote", "is_positive"] as const).find(
@@ -83,23 +83,91 @@ export default async function AdminDashboardPage() {
 
   let upvotes = 0;
   let downvotes = 0;
+  let totalVoteScore = 0;
+  let totalScoredVotes = 0;
+  const uniqueRaters = new Set<string>();
+  const raterIdColumn = (["profile_id", "user_id", "rater_profile_id"] as const).find(
+    (k) => k in voteSample
+  );
+  const voteCaptionColumn = (["caption_id", "captions_id"] as const).find((k) => k in voteSample);
+  const voteByCaption = new Map<
+    string,
+    { upvotes: number; downvotes: number; netScore: number; totalRatings: number }
+  >();
   for (const row of votes) {
+    if (raterIdColumn) {
+      const raterId = String(row[raterIdColumn] ?? "").trim();
+      if (raterId) uniqueRaters.add(raterId);
+    }
+    const captionId = voteCaptionColumn ? String(row[voteCaptionColumn] ?? "").trim() : "";
+    if (captionId && !voteByCaption.has(captionId)) {
+      voteByCaption.set(captionId, { upvotes: 0, downvotes: 0, netScore: 0, totalRatings: 0 });
+    }
+
     if (scoreColumn) {
       const score = Number(row[scoreColumn] ?? 0);
-      if (Number.isFinite(score) && score > 0) upvotes += 1;
-      if (Number.isFinite(score) && score < 0) downvotes += 1;
+      if (Number.isFinite(score)) {
+        if (score > 0) upvotes += 1;
+        if (score < 0) downvotes += 1;
+        totalVoteScore += score;
+        totalScoredVotes += 1;
+        if (captionId) {
+          const agg = voteByCaption.get(captionId)!;
+          agg.totalRatings += 1;
+          agg.netScore += score;
+          if (score > 0) agg.upvotes += 1;
+          if (score < 0) agg.downvotes += 1;
+        }
+      }
       continue;
     }
     if (upvoteColumn) {
-      if (row[upvoteColumn] === true) upvotes += 1;
-      else downvotes += 1;
+      if (row[upvoteColumn] === true) {
+        upvotes += 1;
+        totalVoteScore += 1;
+        if (captionId) {
+          const agg = voteByCaption.get(captionId)!;
+          agg.upvotes += 1;
+          agg.netScore += 1;
+          agg.totalRatings += 1;
+        }
+      } else {
+        downvotes += 1;
+        totalVoteScore += -1;
+        if (captionId) {
+          const agg = voteByCaption.get(captionId)!;
+          agg.downvotes += 1;
+          agg.netScore += -1;
+          agg.totalRatings += 1;
+        }
+      }
+      totalScoredVotes += 1;
       continue;
     }
     if (downvoteColumn) {
-      if (row[downvoteColumn] === true) downvotes += 1;
-      else upvotes += 1;
+      if (row[downvoteColumn] === true) {
+        downvotes += 1;
+        totalVoteScore += -1;
+        if (captionId) {
+          const agg = voteByCaption.get(captionId)!;
+          agg.downvotes += 1;
+          agg.netScore += -1;
+          agg.totalRatings += 1;
+        }
+      } else {
+        upvotes += 1;
+        totalVoteScore += 1;
+        if (captionId) {
+          const agg = voteByCaption.get(captionId)!;
+          agg.upvotes += 1;
+          agg.netScore += 1;
+          agg.totalRatings += 1;
+        }
+      }
+      totalScoredVotes += 1;
     }
   }
+  const averageRatingScore = totalScoredVotes > 0 ? totalVoteScore / totalScoredVotes : 0;
 
   const imagesDataResult = await supabase
     .from("images")
@@ -275,6 +343,48 @@ export default async function AdminDashboardPage() {
     );
   }
 
+  const captionPerformanceRows = [...voteByCaption.entries()]
+    .map(([captionId, agg]) => ({
+      captionId,
+      ...agg,
+    }))
+    .sort((a, b) => {
+      if (b.netScore !== a.netScore) return b.netScore - a.netScore;
+      return b.totalRatings - a.totalRatings;
+    })
+    .slice(0, 10);
+
+  const performanceCaptionIds = captionPerformanceRows.map((x) => x.captionId);
+  const performanceCaptionMap = new Map<string, Row>();
+  if (performanceCaptionIds.length > 0) {
+    const { data } = await supabase
+      .from("captions")
+      .select("id,content,image_id")
+      .in("id", performanceCaptionIds);
+    for (const row of (data ?? []) as Row[]) {
+      performanceCaptionMap.set(String(row.id), row);
+    }
+  }
+
+  const performanceImageIds = [...new Set(
+    [...performanceCaptionMap.values()]
+      .map((r) => String(r.image_id ?? "").trim())
+      .filter(Boolean)
+  )];
+  const performanceImageMap = new Map<string, string>();
+  if (performanceImageIds.length > 0) {
+    const { data } = await supabase
+      .from("images")
+      .select("id,url,image_url,public_url")
+      .in("id", performanceImageIds);
+    for (const row of (data ?? []) as Row[]) {
+      performanceImageMap.set(
+        String(row.id),
+        String(row.url ?? row.image_url ?? row.public_url ?? "—")
+      );
+    }
+  }
+
   const activityBarTotal = Math.max(1, upvotes + downvotes);
   const upPct = Math.round((upvotes / activityBarTotal) * 100);
   const downPct = Math.max(0, 100 - upPct);
@@ -327,6 +437,88 @@ export default async function AdminDashboardPage() {
             </div>
           </Link>
         ))}
+      </div>
+
+      <div className="admin-card p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="admin-section-title">Caption Rating Stats</h2>
+            <p className="mt-1 text-sm text-zinc-600">
+              Snapshot of caption voting behavior from <code>caption_votes</code>.
+            </p>
+          </div>
+          <Link
+            href="/admin/caption-rating-stats"
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+          >
+            Open full analytics
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          {[
+            { label: "Total captions", value: voteByCaption.size },
+            { label: "Total votes/ratings", value: votes.length },
+            { label: "Total upvotes", value: upvotes },
+            { label: "Total downvotes", value: downvotes },
+            { label: "Average rating score", value: averageRatingScore.toFixed(3) },
+            { label: "Unique users who rated", value: uniqueRaters.size },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                {stat.label}
+              </div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-zinc-900">
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 overflow-hidden rounded-xl border border-zinc-200">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
+              <tr>
+                <th className="px-4 py-3">Caption text</th>
+                <th className="px-4 py-3">Image</th>
+                <th className="px-4 py-3">Upvotes</th>
+                <th className="px-4 py-3">Downvotes</th>
+                <th className="px-4 py-3">Net score</th>
+                <th className="px-4 py-3">Total ratings</th>
+              </tr>
+            </thead>
+            <tbody>
+              {captionPerformanceRows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-sm text-zinc-600">
+                    No caption rating data available yet.
+                  </td>
+                </tr>
+              ) : (
+                captionPerformanceRows.map((row) => {
+                  const caption = performanceCaptionMap.get(row.captionId);
+                  const imageId = String(caption?.image_id ?? "").trim();
+                  const imageUrl = imageId ? performanceImageMap.get(imageId) ?? "—" : "—";
+                  return (
+                    <tr key={row.captionId} className="border-b border-zinc-100 last:border-0">
+                      <td className="max-w-xl truncate px-4 py-3 text-zinc-900">
+                        {String(caption?.content ?? row.captionId)}
+                      </td>
+                      <td className="max-w-sm truncate px-4 py-3 text-zinc-700">{imageUrl}</td>
+                      <td className="px-4 py-3 tabular-nums text-emerald-700">{row.upvotes}</td>
+                      <td className="px-4 py-3 tabular-nums text-rose-700">{row.downvotes}</td>
+                      <td className="px-4 py-3 tabular-nums text-zinc-900">{row.netScore}</td>
+                      <td className="px-4 py-3 tabular-nums text-zinc-700">{row.totalRatings}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
